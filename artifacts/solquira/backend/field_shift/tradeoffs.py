@@ -131,10 +131,12 @@ def compare_pathways(context: dict, field_input: FieldShiftInput) -> list[Pathwa
             observations.append("No hard exclusion detected; site-specific agronomic suitability remains unassessed.")
             observations_es.append("No se identificó una exclusión categórica; la aptitud agronómica local sigue sin evaluarse.")
 
+        # Missing drainage cannot be replaced with an arbitrary middle score.
+        # In particular, wet exposure=0 is a real zero, not a missing value.
         primary = (
             dry_exposure if field_input.concern == "dry"
             else wet_exposure if field_input.concern == "wet"
-            else round((dry_exposure + (wet_exposure or 50)) / 2)
+            else (round((dry_exposure + wet_exposure) / 2) if wet_exposure is not None else None)
         )
 
         results.append(
