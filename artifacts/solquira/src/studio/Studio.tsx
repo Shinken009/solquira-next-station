@@ -890,7 +890,7 @@ export default function Studio() {
         >
           <BrandMark className="qs-brand-symbol" />
           <span>
-            Solquira
+            Solquira <em className="qs-next-station-mark">Next Station</em>
             <small>{t("Understand the land. Cultivate the future.")}</small>
           </span>
         </a>
@@ -966,29 +966,29 @@ export default function Studio() {
             <div className="qs-intro-copy">
               <div className="qs-kicker">
                 <span className="qs-dot" />{" "}
-                {t("For the land. For the people who care for it.")}
+                {t("From changing rainfall to choices for the next season.")}
               </div>
               <h1 id="qs-title">
-                {t("Start with a place.")}
+                {t("Understand this land.")}
                 <br />
-                {t("Find your next step.")}
+                {t("Prepare the next season.")}
               </h1>
               <p>
                 {mode === "offline"
                   ? t(
-                      "Explore a landscape and prepared examples. Choose one useful question for your next visit.",
+                      "Explore the landscape and preparation questions. Historical NASA comparisons require an available data service.",
                     )
                   : t(
-                      "Choose the land you care for. Bring what you notice, understand the weather context, and keep one manageable next check.",
+                      "From drylands to rainy landscapes, explore seasonal evidence, add what you know about the field, and compare alternatives without treating them as prescriptions.",
                     )}
               </p>
               <div className="qs-hero-actions">
                 <a className="qs-hero-cta" href="#qs-landscape">
                   {t("Start with a place")} <MapPin size={18} />
                 </a>
-                <a className="qs-hero-secondary" href="#qs-scenario">
-                  {t("Try a crop example")}
-                </a>
+                <button className="qs-hero-secondary" type="button" onClick={() => navigateArea("anticipation", "qs-field-shift")}>
+                  {t("Explore NASA seasonal evidence")}
+                </button>
               </div>
             </div>
             <TerrainStudy />
@@ -2291,7 +2291,7 @@ export default function Studio() {
             </h2>
             <p>
               {t(
-                "Born in Latin America and built for drylands everywhere, Solquira brings landscape evidence and local knowledge together, place by place. It supports growers, advisers and communities facing water stress, a changing climate and desertification as they choose a practical next step for the land they care for.",
+                "Solquira began in Latin America with the challenge of drought, desertification and land degradation. Next Station extends this mission to seasonal water variability and humid landscapes. It combines historical environmental evidence with local knowledge so growers, advisers and communities can compare possibilities and decide what to check next.",
               )}
             </p>
           </div>
@@ -2304,11 +2304,11 @@ export default function Studio() {
           <div className="qs-footer-identity">
             <BrandMark className="qs-footer-symbol" />
             <span className="qs-footer-brand">
-              Solquira{" "}
+              Solquira · Next Station{" "}
               <small>{t("Understand the land. Cultivate the future.")}</small>
             </span>
             <p className="qs-footer-tagline">
-              {t("Built for drylands, from Latin America.")}
+              {t("For drylands and rainy landscapes, from Latin America.")}
             </p>
           </div>
 
