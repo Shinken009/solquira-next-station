@@ -158,7 +158,13 @@ def compare_pathways(context: dict, field_input: FieldShiftInput) -> list[Pathwa
         )
 
     if field_input.priority == "water":
-        results.sort(key=lambda item: (item.dry_exposure_indicator, item.id))
+        # Sort by the exposure actually selected: dry, wet, or combined.
+        # Unknown conditions have no primary index and must not be ranked as low risk.
+        results.sort(key=lambda item: (
+            item.primary_indicator is None,
+            item.primary_indicator if item.primary_indicator is not None else 0,
+            item.id,
+        ))
     elif field_input.priority == "soil":
         results.sort(key=lambda item: (-item.ground_cover_level, item.id))
     elif field_input.priority == "diversity":
