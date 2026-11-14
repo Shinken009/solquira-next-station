@@ -18,10 +18,11 @@ jobs:
           cache: "pip"
           cache-dependency-path: artifacts/solquira/backend/requirements.lock.txt
       - name: Install pinned backend dependencies
-        run: python -m pip install -r artifacts/solquira/backend/requirements.lock.txt
+        run: |
+          python -m pip install -r artifacts/solquira/backend/requirements.lock.txt
+          python -m pip install 'numpy>=2.0,<3'  # test-only legacy-engine dependency
       - name: Run backend tests without production credentials
         env:
-          SOLQUIRA_STUDIO_MODE: "1"
           SOLQUIRA_STUDIO_GEODATA: "0"
         run: python -m unittest discover -s artifacts/solquira/backend -p "test_*.py"
       - name: Check deterministic fixtures
