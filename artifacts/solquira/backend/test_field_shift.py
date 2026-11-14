@@ -182,6 +182,35 @@ class FieldShiftTests(unittest.TestCase):
         self.assertTrue(any("user-reported" in obs for p in user_results for obs in p.observations))
         self.assertTrue(all(p.agronomic_viability == "not_assessed" for p in demo_results))
 
+    def test_water_priority_respects_selected_dry_or_wet_concern(self):
+        context = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
+        dry_input = FieldShiftInput(
+            latitude=-35.43, longitude=-71.66,
+            concern="dry", priority="water", drainage="restricted",
+        )
+        wet_input = FieldShiftInput(
+            latitude=-42.48, longitude=-73.76,
+            concern="wet", priority="water", drainage="restricted",
+        )
+        for selected in (dry_input, wet_input):
+            with self.subTest(concern=selected.concern):
+                pathways = compare_pathways(context, selected)
+                primary_scores = [item.primary_indicator for item in pathways]
+                self.assertEqual(primary_scores, sorted(primary_scores))
+                self.assertTrue(all(score is not None for score in primary_scores))
+                self.assertEqual(
+                    [item.primary_indicator for item in pathways],
+                    [getattr(item, f"{selected.concern}_exposure_indicator") for item in pathways],
+                )
+
+        # Missing drainage must never receive a made-up score to force a ranking.
+        unknown = FieldShiftInput(
+            latitude=-42.48, longitude=-73.76,
+            concern="wet", priority="water", drainage="unknown",
+        )
+        unknown_results = compare_pathways(context, unknown)
+        self.assertTrue(all(item.primary_indicator is None for item in unknown_results))
+
     def test_priority_sorting_does_not_mutate_indicators(self):
         summary = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
         water_first = compare_pathways(summary, FieldShiftInput(latitude=-35.43, longitude=-71.66, priority="water"))
