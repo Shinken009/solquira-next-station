@@ -137,6 +137,17 @@ class FieldShiftTests(unittest.TestCase):
         self.assertTrue(all(p.wet_exposure_indicator is None for p in results))
         self.assertTrue(all(p.agronomic_viability == "not_assessed" for p in results))
 
+    def test_spanish_and_english_explanations_share_identical_indicators(self):
+        summary = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
+        selected = FieldShiftInput(latitude=-42.48, longitude=-73.76, concern="wet", drainage="restricted")
+        pathways = compare_pathways(summary, selected)
+        self.assertEqual(len(pathways), 4)
+        for pathway in pathways:
+            self.assertEqual(len(pathway.observations), len(pathway.observations_es))
+            self.assertTrue(pathway.limitation)
+            self.assertTrue(pathway.limitation_es)
+            self.assertEqual(pathway.agronomic_viability, "not_assessed")
+
     def test_priority_sorting_does_not_mutate_indicators(self):
         summary = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
         water_first = compare_pathways(summary, FieldShiftInput(latitude=-35.43, longitude=-71.66, priority="water"))
