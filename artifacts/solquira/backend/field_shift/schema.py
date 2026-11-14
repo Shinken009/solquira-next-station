@@ -18,8 +18,10 @@ class FieldShiftInput(BaseModel):
     latitude: float = Field(..., ge=-90.0, le=90.0, description="Latitude in decimal degrees")
     longitude: float = Field(..., ge=-180.0, le=180.0, description="Longitude in decimal degrees")
     season: SeasonPeriodType = Field("apr_sep", description="Seasonal comparison window: apr_sep or oct_mar")
-    drainage: DrainageType = Field("unknown", description="Self-reported drainage condition")
-    soil: SoilTextureType = Field("unknown", description="Self-reported soil texture")
+    drainage: DrainageType = Field("unknown", description="Drainage condition, possibly illustrative")
+    soil: SoilTextureType = Field("unknown", description="Soil texture, possibly illustrative")
+    drainage_origin: Literal["self_reported", "illustrative_demo"] = "self_reported"
+    soil_origin: Literal["self_reported", "illustrative_demo"] = "self_reported"
     previous_crop: Optional[str] = Field(None, description="Previous season crop category")
     priority: Optional[PriorityType] = Field("water", description="Farmer stated exploration priority")
     concern: ConcernType = Field("dry", description="Primary hydroclimatic concern")
