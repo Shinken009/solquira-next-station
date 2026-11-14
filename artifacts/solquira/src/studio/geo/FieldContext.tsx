@@ -630,15 +630,15 @@ export default function FieldContext({
             retryAt={powerRetryAt} onRetryAt={setPowerRetryAt} onReconnect={onReconnect} />
         )}
         <FieldShiftJourney
-          point={point || draft}
+          point={point}
           csrfToken={csrfToken}
           onSelectPreset={(lat, lon) => {
-            const p = { latitude: lat, longitude: lon };
-            setLatitude(lat.toFixed(5));
-            setLongitude(lon.toFixed(5));
-            setDraft(p);
-            setPoint(p);
-            onPointChange?.(p);
+            // A preset is only a draft until the user confirms the location.
+            // Reuse the same invalidation/consent flow as map and GPS selection.
+            prepare({ latitude: lat, longitude: lon }, "reference");
+            setSelecting(false);
+            setOpened(true);
+            onNavigate("territory", "geo-confirm-point");
           }}
         />
       </section>

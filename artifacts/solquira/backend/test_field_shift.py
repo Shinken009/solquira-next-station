@@ -9,6 +9,10 @@ Tests:
 """
 from __future__ import annotations
 import unittest
+import os
+from unittest.mock import Mock, patch
+
+import studio_api
 from datetime import date, timedelta
 from fastapi.testclient import TestClient
 
@@ -143,33 +147,124 @@ class FieldShiftTests(unittest.TestCase):
         soil_map = {p.id: p.dry_exposure_indicator for p in soil_first}
         self.assertEqual(water_map, soil_map)
 
-    def test_fastapi_field_shift_healthz(self):
+    def _client_with_session(self):
+        env = patch.dict(os.environ, {
+            "SOLQUIRA_STUDIO_MODE": "1",
+            "SOLQUIRA_STUDIO_ALLOWED_HOSTS": "testserver",
+        })
+        env.start()
+        self.addCleanup(env.stop)
+        studio_api.ADMISSION.reset()
+        self.addCleanup(studio_api.ADMISSION.reset)
         client = TestClient(app)
-        res = client.get("/solquira-api/studio/field-shift/healthz")
-        self.assertEqual(res.status_code, 200)
-        data = res.json()
-        self.assertEqual(data["status"], "healthy")
-        self.assertEqual(data["domain"], "field_shift")
+        self.addCleanup(client.close)
+        with patch.object(studio_api, "_service") as service:
+            service.return_value.studio_status.return_value = {
+                "available": False, "mode": "local_fallback", "model": None,
+            }
+            bootstrap = client.get("/solquira-api/studio/bootstrap")
+        self.assertEqual(bootstrap.status_code, 200)
+        return client, bootstrap.json()["csrf_token"]
+
+    def _field_request(self):
+        return {
+            "latitude": -30.04, "longitude": -71.25,
+            "season": "apr_sep", "drainage": "well_drained",
+            "soil": "sandy", "priority": "water", "concern": "dry",
+        }
+
+    def test_fastapi_field_shift_healthz(self):
+        with patch.dict(os.environ, {"SOLQUIRA_STUDIO_MODE": "1"}):
+            client = TestClient(app, base_url="http://127.0.0.1")
+            with client:
+                res = client.get("/solquira-api/studio/field-shift/healthz")
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.json()["domain"], "field_shift")
+
+    def test_fastapi_field_shift_evaluate_requires_session(self):
+        with patch.dict(os.environ, {
+            "SOLQUIRA_STUDIO_MODE": "1",
+            "SOLQUIRA_STUDIO_ALLOWED_HOSTS": "testserver",
+        }):
+            studio_api.ADMISSION.reset()
+            with TestClient(app) as client:
+                with patch("field_shift.routes.evaluate_field_shift") as worker:
+                    res = client.post(
+                        "/solquira-api/studio/field-shift/evaluate",
+                        json=self._field_request(),
+                    )
+                    self.assertEqual(res.status_code, 401)
+                    worker.assert_not_called()
+
+    def test_fastapi_field_shift_rejects_missing_or_forged_csrf(self):
+        client, csrf = self._client_with_session()
+        for headers in ({}, {studio_api.CSRF_HEADER: "forged"}):
+            with self.subTest(headers=headers):
+                with patch("field_shift.routes.evaluate_field_shift") as worker:
+                    res = client.post(
+                        "/solquira-api/studio/field-shift/evaluate",
+                        json=self._field_request(), headers=headers,
+                    )
+                    self.assertEqual(res.status_code, 403)
+                    worker.assert_not_called()
+
+    def test_fastapi_field_shift_rejects_untrusted_origin(self):
+        client, csrf = self._client_with_session()
+        with patch("field_shift.routes.evaluate_field_shift") as worker:
+            res = client.post(
+                "/solquira-api/studio/field-shift/evaluate",
+                json=self._field_request(),
+                headers={studio_api.CSRF_HEADER: csrf, "Origin": "https://attacker.invalid"},
+            )
+            self.assertEqual(res.status_code, 403)
+            worker.assert_not_called()
 
     def test_fastapi_field_shift_evaluate_endpoint(self):
-        client = TestClient(app)
-        # Point to Coquimbo, Chile
-        body = {
-            "latitude": -30.04,
-            "longitude": -71.25,
-            "season": "apr_sep",
-            "drainage": "well_drained",
-            "soil": "sandy",
-            "priority": "water",
-            "concern": "dry",
-        }
-        res = client.post("/solquira-api/studio/field-shift/evaluate", json=body)
+        client, csrf = self._client_with_session()
+        with patch("field_shift.routes.evaluate_field_shift") as worker:
+            result = Mock()
+            result.model_dump.return_value = {
+                "version": "solquira.field-shift/2.0",
+                "status": "source_unavailable",
+                "pathways": [],
+                "provenance": {"provider": "NASA POWER"},
+            }
+            worker.return_value = result
+            res = client.post(
+                "/solquira-api/studio/field-shift/evaluate",
+                json=self._field_request(),
+                headers={studio_api.CSRF_HEADER: csrf},
+            )
         self.assertEqual(res.status_code, 200)
-        data = res.json()
-        self.assertEqual(data["version"], "solquira.field-shift/2.0")
-        self.assertIn(data["status"], ("historical_evidence_available", "source_unavailable"))
-        self.assertIn("provenance", data)
-        self.assertEqual(data["provenance"]["provider"], "NASA POWER")
+        self.assertEqual(res.json()["version"], "solquira.field-shift/2.0")
+        worker.assert_called_once()
+        self.assertEqual(res.headers["cache-control"], "no-store")
+
+    def test_fastapi_field_shift_enforces_power_budget(self):
+        client, csrf = self._client_with_session()
+        with patch("field_shift.routes.evaluate_field_shift") as worker:
+            result = Mock()
+            result.model_dump.return_value = {"status": "source_unavailable", "pathways": []}
+            worker.return_value = result
+            statuses = [
+                client.post(
+                    "/solquira-api/studio/field-shift/evaluate",
+                    json=self._field_request(), headers={studio_api.CSRF_HEADER: csrf},
+                ).status_code for _ in range(studio_api.POWER_SESSION_REQUESTS + 1)
+            ]
+        self.assertEqual(statuses[:-1], [200] * studio_api.POWER_SESSION_REQUESTS)
+        self.assertEqual(statuses[-1], 429)
+
+    def test_fastapi_field_shift_rejects_oversized_body(self):
+        client, csrf = self._client_with_session()
+        with patch("field_shift.routes.evaluate_field_shift") as worker:
+            res = client.post(
+                "/solquira-api/studio/field-shift/evaluate",
+                content=b" " * (studio_api.MAX_BODY_BYTES + 1),
+                headers={"Content-Type": "application/json", studio_api.CSRF_HEADER: csrf},
+            )
+            self.assertEqual(res.status_code, 413)
+            worker.assert_not_called()
 
 
 if __name__ == "__main__":

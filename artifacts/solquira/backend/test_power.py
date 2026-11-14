@@ -2,6 +2,7 @@ import copy
 import json
 import queue
 import threading
+import time
 import unittest
 import urllib.error
 from concurrent.futures import ThreadPoolExecutor
@@ -190,7 +191,7 @@ class PowerTests(unittest.TestCase):
         with self.mocked(self.raw) as transport:
             self.query()
             for key, (_, result) in list(power._CACHE.items()):
-                power._CACHE[key] = (0, result)
+                power._CACHE[key] = (time.monotonic() - power.CACHE_TTL - 1, result)
             self.query()
             self.assertEqual(transport.call_count, 2)
 
