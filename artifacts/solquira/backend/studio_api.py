@@ -876,3 +876,12 @@ async def field_brief(request: Request):
             brief, outcome, attempt = fallback_brief(payload), "provider_error", Attempt(attempt_mode(provider), ("route_error",), None)
         return _field_response(brief, scenario, outcome=outcome, attempt=attempt,
                                elapsed_ms=round((time.monotonic() - started) * 1000), payload=payload)
+
+
+# Field Shift additive router integration
+try:
+    from field_shift.routes import field_shift_router
+    studio_router.include_router(field_shift_router)
+except ImportError:
+    pass
+
