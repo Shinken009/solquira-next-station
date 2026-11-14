@@ -43,7 +43,9 @@ class PathwayResult(BaseModel):
     ground_cover_level: int
     rotation_diversity_level: int
     observations: list[str]
+    observations_es: list[str] = Field(default_factory=list)
     limitation: str
+    limitation_es: str | None = None
     agronomic_viability: Literal["not_assessed"] = "not_assessed"
 
 
