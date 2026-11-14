@@ -148,6 +148,15 @@ class FieldShiftTests(unittest.TestCase):
             self.assertTrue(pathway.limitation_es)
             self.assertEqual(pathway.agronomic_viability, "not_assessed")
 
+    def test_unknown_drainage_does_not_invent_a_balanced_score(self):
+        context = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
+        missing = FieldShiftInput(latitude=-35.43, longitude=-71.66, concern="balanced")
+        measured = FieldShiftInput(latitude=-35.43, longitude=-71.66, concern="balanced", drainage="well_drained")
+        unknown_results = compare_pathways(context, missing)
+        known_results = compare_pathways(context, measured)
+        self.assertTrue(all(p.wet_exposure_indicator is None and p.primary_indicator is None for p in unknown_results))
+        self.assertTrue(all(p.primary_indicator is not None for p in known_results))
+
     def test_illustrative_assumptions_are_provenance_labeled(self):
         from field_shift.adapter import evaluate_field_shift
         sample = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
