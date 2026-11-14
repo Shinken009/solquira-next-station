@@ -30,6 +30,7 @@ import type { WorkspaceArea } from "../Studio";
 import AnticipationIndicators from "./AnticipationIndicators";
 import HistoricalContext from "./HistoricalContext";
 import PowerContext from "./PowerContext";
+import { FieldShiftJourney } from "./FieldShiftJourney";
 const Landscape = lazy(() => import("./CesiumFieldMap"));
 type LocationSource = "none" | "device" | "manual" | "map" | "reference";
 type DeviceLocation = Point & { accuracyMeters: number | null; capturedAt: number };
@@ -628,6 +629,18 @@ export default function FieldContext({
           <PowerContext key={`${point.latitude}:${point.longitude}:${csrfToken}`} point={point} csrf={csrfToken}
             retryAt={powerRetryAt} onRetryAt={setPowerRetryAt} onReconnect={onReconnect} />
         )}
+        <FieldShiftJourney
+          point={point || draft}
+          csrfToken={csrfToken}
+          onSelectPreset={(lat, lon) => {
+            const p = { latitude: lat, longitude: lon };
+            setLatitude(lat.toFixed(5));
+            setLongitude(lon.toFixed(5));
+            setDraft(p);
+            setPoint(p);
+            onPointChange?.(p);
+          }}
+        />
       </section>
     </>
   );
