@@ -125,7 +125,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
   useEffect(() => {
     setEvaluation(null);
     setErrorMsg(null);
-  }, [point?.latitude, point?.longitude, season, drainage, soil, priority, concern]);
+  }, [point?.latitude, point?.longitude, season, drainage, soil, priority, concern, csrfToken]);
 
   const handleRunEvaluation = useCallback(async () => {
     if (!point || !csrfToken) return;
@@ -180,7 +180,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
   }, [point, season, drainage, soil, priority, concern, csrfToken, isEs]);
 
   return (
-    <section className="field-shift-card" aria-label="Field Shift Decision Support">
+    <section id="qs-field-shift" className="field-shift-card" aria-label="Field Shift Decision Support">
       <header className="field-shift-header">
         <div>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 700 }}>
@@ -275,7 +275,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             value={priority}
             onChange={(e) => setPriority(e.target.value as typeof priority)}
           >
-            <option value="water">{isEs ? "Resiliencia hídrica (déficit)" : "Water resilience (deficit)"}</option>
+            <option value="water">{isEs ? "Gestión del agua" : "Water management"}</option>
             <option value="soil">{isEs ? "Cobertura y salud del suelo" : "Soil cover & conservation"}</option>
             <option value="diversity">{isEs ? "Diversidad de rotación" : "Crop rotation diversity"}</option>
           </select>
