@@ -156,11 +156,13 @@ def evaluate_field_shift(field_input: FieldShiftInput, timeout_s: float = 25.0) 
                 "heavy_rain_threshold": ">= 20.0 mm/day (descriptive count)",
                 "seasonal_inclusion": "100% complete daily observation required for each included season",
                 "tradeoff_nature": "Comparative exploratory indicators, not agronomic crop suitability prescriptions",
+                "soil_origin": field_input.soil_origin if field_input.soil != "unknown" else "unknown",
+                "drainage_origin": field_input.drainage_origin if field_input.drainage != "unknown" else "unknown",
             },
             disclaimers=[
                 "NASA POWER data are model-assimilated historical grid estimates, not on-site parcel measurements.",
                 "Past multi-season observations are not a seasonal weather forecast for 2026/2027.",
-                "Soil and drainage characteristics are self-reported by the operator and require field verification.",
+                "Known soil and drainage values may be self-reported or explicitly selected as illustrative demo assumptions; neither is verified on-site nor a regional average.",
                 "Agronomic feasibility remains unassessed; obtain local agronomic extension counsel before implementation.",
             ],
         )
