@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useStudioPreferences } from "../StudioPreferences";
 import type { Point } from "./client";
 import "./field-shift.css";
@@ -41,7 +41,9 @@ interface PathwayResult {
   ground_cover_level: number;
   rotation_diversity_level: number;
   observations: string[];
+  observations_es?: string[];
   limitation: string;
+  limitation_es?: string;
   agronomic_viability: "not_assessed";
 }
 
@@ -54,45 +56,44 @@ interface EvaluationResponse {
     provider: string;
     dataset: string;
     source_url: string;
+    period_start?: string;
+    period_end?: string;
     time_standard?: string;
     units: Record<string, string>;
     limitation: string;
   };
+  quality?: { requested_days: number; available_days: number; missing_days: number };
   disclaimers: string[];
 }
 
+// Demo presets choose a *place* and a question, never soil or drainage measurements.
 const PRESETS = [
   {
-    id: "coquimbo",
-    name: "Coquimbo",
-    description: "Déficit hídrico & secano semiárido",
-    lat: -30.0400,
-    lon: -71.2500,
-    concern: "dry",
-    soil: "sandy",
-    drainage: "well_drained",
+    id: "coquimbo", name: "Coquimbo",
+    descriptionEs: "Explorar déficit de agua", descriptionEn: "Explore water deficit",
+    lat: -30.0400, lon: -71.2500, concern: "dry", demoSoil: "sandy", demoDrainage: "well_drained",
   },
   {
-    id: "maule",
-    name: "Maule",
-    description: "Transición mediterránea & rotación",
-    lat: -35.4300,
-    lon: -71.6600,
-    concern: "dry",
-    soil: "loamy",
-    drainage: "well_drained",
+    id: "maule", name: "Maule",
+    descriptionEs: "Explorar variación estacional", descriptionEn: "Explore seasonal variability",
+    lat: -35.4300, lon: -71.6600, concern: "balanced", demoSoil: "loamy", demoDrainage: "well_drained",
   },
   {
-    id: "chiloe",
-    name: "Chiloé",
-    description: "Paisaje húmedo & drenaje superficial",
-    lat: -42.4800,
-    lon: -73.7600,
-    concern: "wet",
-    soil: "clayey",
-    drainage: "restricted",
+    id: "chiloe", name: "Chiloé",
+    descriptionEs: "Explorar exceso de humedad", descriptionEn: "Explore excess rainfall",
+    lat: -42.4800, lon: -73.7600, concern: "wet", demoSoil: "clayey", demoDrainage: "restricted",
   },
-];
+] as const;
+
+const PATHWAY_ES: Record<string, string> = {
+  continue: "Mantener la secuencia actual",
+  legume: "Diversificar con leguminosas",
+  cover: "Priorizar cobertura vegetal",
+  forage: "Incorporar forrajeras",
+};
+const CROP_ES: Record<string, string> = {
+  Cereal: "Cereal", Legume: "Leguminosa", Cover: "Cobertura", Forage: "Forrajera",
+};
 
 export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShiftJourneyProps) {
   const { locale } = useStudioPreferences();
@@ -104,24 +105,69 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
   const [soil, setSoil] = useState<"clayey" | "sandy" | "loamy" | "unknown">("unknown");
   const [priority, setPriority] = useState<"water" | "soil" | "diversity">("water");
   const [concern, setConcern] = useState<"dry" | "wet" | "balanced">("dry");
+  const [soilOrigin, setSoilOrigin] = useState<"self_reported" | "illustrative_demo">("self_reported");
+  const [drainageOrigin, setDrainageOrigin] = useState<"self_reported" | "illustrative_demo">("self_reported");
+  const selectedPreset = PRESETS.find((p) => p.id === activePreset);
+  const presetConfirmed = !selectedPreset || Boolean(point &&
+    Math.abs(point.latitude - selectedPreset.lat) < 0.0001 &&
+    Math.abs(point.longitude - selectedPreset.lon) < 0.0001);
 
   const [loading, setLoading] = useState(false);
   const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
 
-  const handleApplyPreset = (p: typeof PRESETS[0]) => {
+  const handleApplyPreset = (p: typeof PRESETS[number]) => {
     setActivePreset(p.id);
-    setConcern(p.concern as any);
-    setSoil(p.soil as any);
-    setDrainage(p.drainage as any);
+    setConcern(p.concern);
+    // Never represent preset assumptions as farmer self-reported soil data.
+    setSoil("unknown");
+    setDrainage("unknown");
+    setSoilOrigin("self_reported");
+    setDrainageOrigin("self_reported");
     if (onSelectPreset) {
       onSelectPreset(p.lat, p.lon);
     }
   };
 
-  const handleRunEvaluation = useCallback(async () => {
+  useEffect(() => {
     if (!point) return;
+    const preset = PRESETS.find((p) => p.id === activePreset);
+    if (preset && (Math.abs(point.latitude - preset.lat) > 0.0001 ||
+                   Math.abs(point.longitude - preset.lon) > 0.0001)) {
+      setActivePreset(null);
+      if (soilOrigin === "illustrative_demo") { setSoil("unknown"); setSoilOrigin("self_reported"); }
+      if (drainageOrigin === "illustrative_demo") { setDrainage("unknown"); setDrainageOrigin("self_reported"); }
+    }
+    // A new confirmed point, not a demo-button click, invalidates the old example.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [point?.latitude, point?.longitude]);
+
+  const useIllustrativeProfile = () => {
+    if (!selectedPreset || !presetConfirmed) return;
+    setSoil(selectedPreset.demoSoil);
+    setDrainage(selectedPreset.demoDrainage);
+    setSoilOrigin("illustrative_demo");
+    setDrainageOrigin("illustrative_demo");
+  };
+
+  // Do not show results for a different place, season or reported field state.
+  useEffect(() => {
+    requestRef.current?.abort();
+    requestRef.current = null;
+    setLoading(false);
+    setEvaluation(null);
+    setErrorMsg(null);
+    return () => { requestRef.current?.abort(); };
+  }, [point?.latitude, point?.longitude, season, drainage, soil, priority, concern, csrfToken, soilOrigin, drainageOrigin]);
+
+  const handleRunEvaluation = useCallback(async () => {
+    if (!point || !csrfToken || !presetConfirmed) return;
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
     setLoading(true);
+    setEvaluation(null);
     setErrorMsg(null);
 
     const payload = {
@@ -130,6 +176,8 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
       season,
       drainage,
       soil,
+      soil_origin: soilOrigin,
+      drainage_origin: drainageOrigin,
       priority,
       concern,
     };
@@ -145,37 +193,47 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
       const res = await fetch("/solquira-api/studio/field-shift/evaluate", {
         method: "POST",
         headers,
+        signal: controller.signal,
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        throw new Error(`HTTP error ${res.status}`);
+        if (res.status === 429) throw new Error("rate_limited");
+        if (res.status === 401 || res.status === 403) throw new Error("session");
+        throw new Error("unavailable");
       }
 
       const data: EvaluationResponse = await res.json();
-      setEvaluation(data);
-    } catch (err: any) {
+      if (!controller.signal.aborted) setEvaluation(data);
+    } catch (err: unknown) {
+      if (controller.signal.aborted) return;
+      const reason = err instanceof Error ? err.message : "";
       setErrorMsg(
-        isEs
-          ? "No se pudo conectar con el adaptador de NASA POWER. Se mantiene la política fail-closed."
-          : "Could not reach NASA POWER adapter. Fail-closed policy active; no synthetic data."
+        reason === "rate_limited"
+          ? (isEs ? "Límite temporal de consultas alcanzado. Inténtalo más tarde." : "Temporary request limit reached. Try again later.")
+          : reason === "session"
+            ? (isEs ? "La sesión expiró. Reconecta el Studio para continuar." : "Session expired. Reconnect Studio to continue.")
+            : (isEs ? "No se pudo consultar NASA POWER. No se generan datos sustitutivos." : "NASA POWER could not be queried. No substitute data were generated.")
       );
     } finally {
-      setLoading(false);
+      if (requestRef.current === controller) {
+        requestRef.current = null;
+        setLoading(false);
+      }
     }
-  }, [point, season, drainage, soil, priority, concern, csrfToken, isEs]);
+  }, [point, season, drainage, soil, priority, concern, csrfToken, isEs, soilOrigin, drainageOrigin, presetConfirmed]);
 
   return (
-    <section className="field-shift-card" aria-label="Field Shift Decision Support">
+    <section id="qs-field-shift" className="field-shift-card" aria-label="Field Shift Decision Support">
       <header className="field-shift-header">
         <div>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 700 }}>
-            {isEs ? "Field Shift — Decisión Estacional" : "Field Shift — Seasonal Adaptation"}
+            {isEs ? "Field Shift — Tu próxima temporada" : "Field Shift — Your next season"}
           </h3>
           <p style={{ margin: "0.2rem 0 0", fontSize: "0.8rem", color: "var(--qs-muted, #718096)" }}>
             {isEs
-              ? "Observaciones históricas NASA POWER vinculadas a decisiones de manejo y rotación."
-              : "Historical NASA POWER observations tied to field management and rotation choices."}
+              ? "Estimaciones históricas de NASA POWER para explorar alternativas de manejo, no predecir la próxima cosecha."
+              : "Historical NASA POWER gridded estimates to explore management choices—not predict the next harvest."}
           </p>
         </div>
         <span className="field-shift-badge">NASA Space Apps 2026</span>
@@ -184,7 +242,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
       {/* Preset Territorials */}
       <div style={{ marginBottom: "0.75rem" }}>
         <div style={{ fontSize: "0.78rem", fontWeight: 600, marginBottom: "0.35rem" }}>
-          {isEs ? "Territorios demostrativos de inicio rápido:" : "Rapid exploration presets:"}
+          {isEs ? "Comienza en un territorio de ejemplo; después confirma el lugar:" : "Choose a demonstration area, then confirm the location:"}
         </div>
         <div className="field-shift-presets">
           {PRESETS.map((p) => (
@@ -195,10 +253,21 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
               onClick={() => handleApplyPreset(p)}
               title={`${p.name} (${p.lat}, ${p.lon})`}
             >
-              <strong>{p.name}</strong> · <span style={{ fontSize: "0.75rem" }}>{p.description}</span>
+              <strong>{p.name}</strong> · <span style={{ fontSize: "0.75rem" }}>{isEs ? p.descriptionEs : p.descriptionEn}</span>
             </button>
           ))}
         </div>
+        {selectedPreset && (
+          <div className="field-shift-demo-option">
+            <button className="preset-chip" type="button" disabled={!presetConfirmed} onClick={useIllustrativeProfile}>
+              {isEs ? "Cargar perfil de suelo ilustrativo" : "Load illustrative field profile"}
+            </button>
+            <p>{isEs
+              ? "Opcional: supuestos hipotéticos para mostrar cómo cambia la comparación. No son mediciones ni promedios estadísticos regionales."
+              : "Optional hypothetical assumptions to explore trade-offs. Neither measurements nor statistical regional averages."}</p>
+            {!presetConfirmed && <p role="status">{isEs ? "Primero confirma el lugar de ejemplo." : "Confirm the example location first."}</p>}
+          </div>
+        )}
       </div>
 
       {/* Parameters Grid */}
@@ -208,7 +277,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
           <select
             id="fs-season"
             value={season}
-            onChange={(e) => setSeason(e.target.value as any)}
+            onChange={(e) => setSeason(e.target.value as typeof season)}
           >
             <option value="apr_sep">
               {isEs ? "Abril–Septiembre (Otoño/Invierno)" : "April–September (Austral Fall/Winter)"}
@@ -220,11 +289,19 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
         </div>
 
         <div className="field-shift-control">
-          <label htmlFor="fs-drainage">{isEs ? "Drenaje de suelo (auto-reportado):" : "Soil drainage (self-reported):"}</label>
+          <label htmlFor="fs-concern">{isEs ? "¿Qué quieres explorar?" : "What would you like to explore?"}</label>
+          <select id="fs-concern" value={concern} onChange={(e) => setConcern(e.target.value as typeof concern)}>
+            <option value="dry">{isEs ? "Déficit hídrico" : "Water deficit"}</option>
+            <option value="wet">{isEs ? "Exceso de humedad" : "Excess rainfall"}</option>
+            <option value="balanced">{isEs ? "Ambos contextos" : "Both conditions"}</option>
+          </select>
+        </div>
+        <div className="field-shift-control">
+          <label htmlFor="fs-drainage">{isEs ? "Drenaje del suelo:" : "Soil drainage:"}</label>
           <select
             id="fs-drainage"
             value={drainage}
-            onChange={(e) => setDrainage(e.target.value as any)}
+            onChange={(e) => { setDrainage(e.target.value as typeof drainage); setDrainageOrigin("self_reported"); }}
           >
             <option value="unknown">{isEs ? "Desconocido / Sin medir" : "Unknown / Unmeasured"}</option>
             <option value="well_drained">{isEs ? "Bien drenado" : "Well drained"}</option>
@@ -233,11 +310,11 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
         </div>
 
         <div className="field-shift-control">
-          <label htmlFor="fs-soil">{isEs ? "Textura del suelo (auto-reportada):" : "Soil texture (self-reported):"}</label>
+          <label htmlFor="fs-soil">{isEs ? "Textura del suelo:" : "Soil texture:"}</label>
           <select
             id="fs-soil"
             value={soil}
-            onChange={(e) => setSoil(e.target.value as any)}
+            onChange={(e) => { setSoil(e.target.value as typeof soil); setSoilOrigin("self_reported"); }}
           >
             <option value="unknown">{isEs ? "Desconocida" : "Unknown"}</option>
             <option value="clayey">{isEs ? "Arcilloso (retentivo/lento)" : "Clayey (retentive/slow)"}</option>
@@ -251,21 +328,26 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
           <select
             id="fs-priority"
             value={priority}
-            onChange={(e) => setPriority(e.target.value as any)}
+            onChange={(e) => setPriority(e.target.value as typeof priority)}
           >
-            <option value="water">{isEs ? "Resiliencia hídrica (déficit)" : "Water resilience (deficit)"}</option>
+            <option value="water">{isEs ? "Gestión del agua" : "Water management"}</option>
             <option value="soil">{isEs ? "Cobertura y salud del suelo" : "Soil cover & conservation"}</option>
             <option value="diversity">{isEs ? "Diversidad de rotación" : "Crop rotation diversity"}</option>
           </select>
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+      <p className="field-shift-method">
+        {isEs
+          ? (soilOrigin === "illustrative_demo" || drainageOrigin === "illustrative_demo" ? "Perfil de ejemplo activo: condiciones hipotéticas, no observadas ni representativas de la región." : "Condiciones declaradas por ti o desconocidas: aún sin verificación de terreno.")
+          : (soilOrigin === "illustrative_demo" || drainageOrigin === "illustrative_demo" ? "Example profile active: hypothetical conditions, neither observed nor representative of the region." : "Conditions you reported or left unknown; not field-verified.")}
+      </p>
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
         <button
           type="button"
           className="field-shift-action-btn"
           onClick={handleRunEvaluation}
-          disabled={!point || loading}
+          disabled={!point || !csrfToken || loading || !presetConfirmed}
         >
           {loading ? (isEs ? "Consultando NASA POWER..." : "Querying NASA POWER...") : (isEs ? "Evaluar alternativas con NASA" : "Evaluate alternatives with NASA")}
         </button>
@@ -277,15 +359,39 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
         )}
       </div>
 
+      {selectedPreset && !presetConfirmed && (
+        <p className="field-shift-method" role="status">
+          {isEs ? "Confirma el nuevo punto antes de evaluar; no se reutilizan resultados del lugar anterior." : "Confirm the new point before evaluation; previous-place results are not reused."}
+        </p>
+      )}
+      {!point && (
+        <p className="field-shift-method" role="status">
+          {isEs ? "Confirma primero el territorio seleccionado para habilitar la evaluación." : "Confirm your selected place before running the evaluation."}
+        </p>
+      )}
+
       {errorMsg && (
         <div style={{ marginTop: "0.75rem", padding: "0.5rem 0.75rem", background: "rgba(229, 62, 62, 0.1)", color: "#c53030", borderRadius: 4, fontSize: "0.8rem" }}>
           {errorMsg}
         </div>
       )}
 
+      {evaluation && evaluation.status !== "historical_evidence_available" && (
+        <div className="field-shift-status" role="status">
+          <strong>{isEs ? "Evidencia histórica no disponible" : "Historical evidence unavailable"}</strong>
+          <p>{isEs ? "NASA POWER no entregó una serie suficiente y validada. No se muestran índices ni comparaciones sin evidencia." : "NASA POWER did not provide a sufficient validated series. No indices or comparisons are displayed without evidence."}</p>
+        </div>
+      )}
+
       {/* Results View */}
-      {evaluation && evaluation.historical_context && (
+      {evaluation && evaluation.status === "historical_evidence_available" && evaluation.historical_context && (
         <div className="field-shift-results">
+          <div className="field-shift-evidence-strip">
+            <strong>{isEs ? "Contexto histórico, no pronóstico" : "Historical context, not a forecast"}</strong>
+            <span>{evaluation.provenance.period_start ?? "2021-01-01"} – {evaluation.provenance.period_end ?? "2025-12-31"}</span>
+            <span>{isEs ? "Estimaciones meteorológicas de celdas NASA, no sensores de parcela." : "NASA gridded weather estimates, not parcel sensors."}</span>
+            {evaluation.quality && <span>{isEs ? "Días disponibles" : "Available days"}: {evaluation.quality.available_days}/{evaluation.quality.requested_days}</span>}
+          </div>
           {/* Seasonal KPI Bar */}
           <div className="seasonal-kpi-bar">
             <div className="kpi-item">
@@ -306,10 +412,31 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             </div>
             <div className="kpi-item">
               <span className="kpi-val">{evaluation.historical_context.count} {isEs ? "años" : "yrs"}</span>
-              <span className="kpi-lbl">{isEs ? "Ventanas 100% completas" : "100% complete windows"}</span>
+              <span className="kpi-lbl">{isEs ? "Temporadas completas" : "Complete seasons"}</span>
             </div>
           </div>
 
+          <div className="field-shift-season-chart" aria-label={isEs ? "Precipitación por temporada histórica" : "Rainfall by historical season"}>
+            <h4>{isEs ? "Cómo varió la lluvia entre temporadas" : "How rainfall varied between seasons"}</h4>
+            <div className="field-shift-season-bars">
+              {evaluation.historical_context.sample.map((sample) => {
+                const peak = Math.max(1, ...evaluation.historical_context!.sample.map((entry) => entry.precipitation_mm));
+                return (
+                  <div className="field-shift-season-row" key={sample.season_year}>
+                    <span>{sample.season_year}{season === "oct_mar" ? "–" + String(sample.season_year + 1).slice(-2) : ""}</span>
+                    <div className="field-shift-season-track" role="img" aria-label={isEs ? String(sample.precipitation_mm) + " milímetros" : String(sample.precipitation_mm) + " millimetres"}>
+                      <div style={{ width: String((sample.precipitation_mm / peak) * 100) + "%" }} />
+                    </div>
+                    <span>{sample.precipitation_mm} mm</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p>{isEs ? "Totales históricos por temporada completa. La diferencia entre barras no pronostica la lluvia futura." : "Historical totals for complete seasons. Differences between bars do not forecast future rainfall."}</p>
+          </div>
+          <p className="field-shift-method">
+            {isEs ? "Los valores 0–100 que siguen son índices comparativos construidos con reglas declaradas: NO son probabilidades, predicciones de rendimiento ni mediciones de suelo." : "The following 0–100 values are rule-based comparative indices, NOT probabilities, yield forecasts or measured soil conditions."}
+          </p>
           {/* Pathways List */}
           <div className="pathways-list">
             <h4 style={{ margin: "0.5rem 0 0.25rem", fontSize: "0.9rem", fontWeight: 700 }}>
@@ -319,7 +446,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             {evaluation.pathways.map((plan) => (
               <article key={plan.id} className="pathway-card">
                 <div className="pathway-head">
-                  <span className="pathway-name">{plan.name}</span>
+                  <span className="pathway-name">{isEs ? PATHWAY_ES[plan.id] ?? plan.name : plan.name}</span>
                   <span style={{ fontSize: "0.72rem", background: "rgba(0,0,0,0.05)", padding: "0.2rem 0.4rem", borderRadius: 4 }}>
                     {isEs ? "Viabilidad agronómica:" : "Agronomic viability:"} <strong>{isEs ? "No evaluada" : "Not assessed"}</strong>
                   </span>
@@ -328,40 +455,41 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
                 <div className="pathway-sequence">
                   {plan.sequence.map((crop, idx) => (
                     <span key={idx} className="seq-tag">
-                      {idx + 1}. {crop}
+                      {idx + 1}. {isEs ? CROP_ES[crop] ?? crop : crop}
                     </span>
                   ))}
                 </div>
 
                 <div className="indicator-bar-container">
-                  <span style={{ width: 120 }}>{isEs ? "Déficit hídrico:" : "Drought exposure:"}</span>
+                  <span style={{ width: 120 }}>{isEs ? "Índice de exposición a sequedad:" : "Dry-exposure index:"}</span>
                   <div className="progress-track">
                     <div
                       className="progress-fill fill-dry"
                       style={{ width: `${plan.dry_exposure_indicator}%` }}
                     />
                   </div>
-                  <span style={{ width: 35, textAlign: "right" }}>{plan.dry_exposure_indicator}%</span>
+                  <span style={{ width: 35, textAlign: "right" }}>{plan.dry_exposure_indicator}/100</span>
                 </div>
 
                 {plan.wet_exposure_indicator !== null && (
                   <div className="indicator-bar-container">
-                    <span style={{ width: 120 }}>{isEs ? "Anegamiento:" : "Wet soil exposure:"}</span>
+                    <span style={{ width: 120 }}>{isEs ? "Índice de exposición a humedad:" : "Wet-exposure index:"}</span>
                     <div className="progress-track">
                       <div
                         className="progress-fill fill-wet"
                         style={{ width: `${plan.wet_exposure_indicator}%` }}
                       />
                     </div>
-                    <span style={{ width: 35, textAlign: "right" }}>{plan.wet_exposure_indicator}%</span>
+                    <span style={{ width: 35, textAlign: "right" }}>{plan.wet_exposure_indicator}/100</span>
                   </div>
                 )}
 
                 <ul className="pathway-obs">
-                  {plan.observations.map((obs, i) => (
+                  {(isEs && plan.observations_es?.length ? plan.observations_es : plan.observations).map((obs, i) => (
                     <li key={i}>{obs}</li>
                   ))}
                 </ul>
+                <p className="field-shift-method">{isEs ? plan.limitation_es ?? plan.limitation : plan.limitation}</p>
               </article>
             ))}
           </div>
@@ -371,11 +499,11 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             <div>
               <strong>{isEs ? "Procedencia de datos:" : "Data provenance:"}</strong> {evaluation.provenance.provider} ({evaluation.provenance.dataset}) · {evaluation.provenance.time_standard} ·{" "}
               <a href={evaluation.provenance.source_url} target="_blank" rel="noopener noreferrer">
-                NASA POWER API Doc
+                {isEs ? "Consulta NASA POWER" : "NASA POWER source request"}
               </a>
             </div>
             <div style={{ marginTop: "0.2rem" }}>
-              {evaluation.provenance.limitation}
+              {isEs ? "Estimaciones de una celda meteorológica histórica; no son mediciones de parcela, pronósticos estacionales ni una evaluación de aptitud agronómica." : evaluation.provenance.limitation}
             </div>
           </footer>
         </div>

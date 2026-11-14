@@ -278,3 +278,137 @@
 .dark .provenance-note a {
   color: #63b3ed;
 }
+
+
+/* Interpretability: historical evidence remains distinct from model indices. */
+.field-shift-evidence-strip {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  border-left: 3px solid #39755f;
+  padding: 0.65rem 0.8rem;
+  background: rgba(43, 114, 90, 0.07);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.field-shift-evidence-strip strong {
+  color: var(--qs-text, #1a202c);
+}
+.field-shift-evidence-strip span {
+  color: var(--qs-muted, #4a5568);
+}
+.field-shift-method {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--qs-muted, #4a5568);
+  margin: 0.65rem 0;
+}
+.field-shift-status {
+  border: 1px solid rgba(170, 92, 28, 0.38);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  margin-top: 0.8rem;
+  background: rgba(170, 92, 28, 0.08);
+  color: var(--qs-text, #1a202c);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+.field-shift-status p { margin: 0.3rem 0 0; }
+.field-shift-season-chart {
+  padding: 0.8rem 0.95rem;
+  border: 1px solid var(--qs-border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--qs-surface, #fff);
+}
+.field-shift-season-chart h4 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin: 0 0 0.7rem;
+}
+.field-shift-season-chart p {
+  font-size: 0.76rem;
+  color: var(--qs-muted, #4a5568);
+  margin: 0.6rem 0 0;
+  line-height: 1.5;
+}
+.field-shift-season-bars { display: flex; flex-direction: column; gap: 0.5rem; }
+.field-shift-season-row {
+  display: grid;
+  grid-template-columns: 72px minmax(50px, 1fr) minmax(68px, auto);
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+.field-shift-season-row > span:last-child { text-align: right; }
+.field-shift-season-track {
+  width: 100%;
+  height: 12px;
+  background: rgba(43, 114, 90, 0.09);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.field-shift-season-track > div {
+  min-height: 100%;
+  background: #43816a;
+  border-radius: 3px;
+}
+.field-shift-control select:focus-visible,
+.preset-chip:focus-visible,
+.field-shift-action-btn:focus-visible {
+  outline: 3px solid #3173bb;
+  outline-offset: 2px;
+}
+.pathway-head { gap: 0.5rem; flex-wrap: wrap; }
+.pathway-sequence { flex-wrap: wrap; }
+.indicator-bar-container { flex-wrap: wrap; }
+.indicator-bar-container > span:first-child { min-width: 150px; flex: 1 0 150px; }
+.indicator-bar-container > span:last-child { min-width: 55px; font-variant-numeric: tabular-nums; }
+.dark .field-shift-method,
+.dark .field-shift-evidence-strip span,
+.dark .field-shift-season-chart p { color: #c3cedb; }
+.dark .field-shift-evidence-strip {
+  border-left-color: #89cbb0;
+  background: rgba(84, 166, 131, 0.1);
+}
+.dark .field-shift-evidence-strip strong { color: #eef3f7; }
+.dark .field-shift-season-chart { background: #1e242b; }
+.dark .field-shift-season-track { background: rgba(123, 196, 163, 0.14); }
+.dark .field-shift-season-track > div { background: #87c9aa; }
+.dark .field-shift-status { background: rgba(220, 156, 79, 0.11); color: #f6f2ee; }
+@media (max-width: 540px) {
+  .field-shift-card { padding: 0.85rem; }
+  .field-shift-header { align-items: flex-start; gap: 0.65rem; flex-wrap: wrap; }
+  .field-shift-grid { grid-template-columns: minmax(0, 1fr); }
+  .field-shift-action-btn { width: 100%; justify-content: center; }
+  .seasonal-kpi-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .field-shift-season-row { grid-template-columns: 60px minmax(20px, 1fr) 72px; gap: 0.4rem; }
+}
+
+
+.field-shift-demo-option {
+  display: grid;
+  align-items: start;
+  justify-items: start;
+  gap: 0.3rem;
+  margin-top: 0.8rem;
+  padding: 0.7rem 0.85rem;
+  background: rgba(99, 119, 89, 0.08);
+  border: 1px solid var(--qs-border, #cbd5e0);
+  border-radius: 7px;
+}
+.field-shift-demo-option button { font-weight: 650; }
+.field-shift-demo-option button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.field-shift-demo-option p {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--qs-muted, #4a5568);
+  font-size: 0.78rem;
+}
+.dark .field-shift-demo-option { background: rgba(144, 173, 120, 0.1); }
+.dark .field-shift-demo-option p { color: #c3cedb; }

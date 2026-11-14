@@ -1,5 +1,13 @@
 // Product interface copy only. Source data, identifiers and user content stay unchanged.
 export const studioCopy: Record<string, string> = {
+  "From changing rainfall to choices for the next season.": "De la lluvia cambiante a las decisiones para la próxima temporada.",
+  "Understand this land.": "Comprende este territorio.",
+  "Prepare the next season.": "Prepara la próxima temporada.",
+  "Explore the landscape and preparation questions. Historical NASA comparisons require an available data service.": "Explora el territorio y las preguntas de campo. Las comparaciones históricas de NASA requieren una fuente de datos disponible.",
+  "From drylands to rainy landscapes, explore seasonal evidence, add what you know about the field, and compare alternatives without treating them as prescriptions.": "De los secanos a los paisajes lluviosos, explora evidencia estacional, incorpora tu conocimiento del terreno y compara alternativas sin convertirlas en recetas agrícolas.",
+  "Explore NASA seasonal evidence": "Explorar evidencia estacional NASA",
+  "Solquira began in Latin America with the challenge of drought, desertification and land degradation. Next Station extends this mission to seasonal water variability and humid landscapes. It combines historical environmental evidence with local knowledge so growers, advisers and communities can compare possibilities and decide what to check next.": "Solquira nació en América Latina frente a la sequía, la desertificación y la degradación del suelo. Next Station amplía esa misión hacia la variabilidad estacional del agua y los paisajes húmedos. Combina evidencia ambiental histórica con conocimiento local para que agricultores, asesores y comunidades comparen alternativas y decidan qué observar después.",
+  "For drylands and rainy landscapes, from Latin America.": "Para tierras secas y paisajes lluviosos, desde América Latina.",
   "Connect the location forecast": "Conectar el pronóstico del lugar",
   "Understand your example": "Comprender el ejemplo",
   "Check water & compare crop paths": "Comparar agua y alternativas de cultivo",

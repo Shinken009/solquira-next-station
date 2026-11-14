@@ -137,6 +137,51 @@ class FieldShiftTests(unittest.TestCase):
         self.assertTrue(all(p.wet_exposure_indicator is None for p in results))
         self.assertTrue(all(p.agronomic_viability == "not_assessed" for p in results))
 
+    def test_spanish_and_english_explanations_share_identical_indicators(self):
+        summary = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
+        selected = FieldShiftInput(latitude=-42.48, longitude=-73.76, concern="wet", drainage="restricted")
+        pathways = compare_pathways(summary, selected)
+        self.assertEqual(len(pathways), 4)
+        for pathway in pathways:
+            self.assertEqual(len(pathway.observations), len(pathway.observations_es))
+            self.assertTrue(pathway.limitation)
+            self.assertTrue(pathway.limitation_es)
+            self.assertEqual(pathway.agronomic_viability, "not_assessed")
+
+    def test_unknown_drainage_does_not_invent_a_balanced_score(self):
+        context = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
+        missing = FieldShiftInput(latitude=-35.43, longitude=-71.66, concern="balanced")
+        measured = FieldShiftInput(latitude=-35.43, longitude=-71.66, concern="balanced", drainage="well_drained")
+        unknown_results = compare_pathways(context, missing)
+        known_results = compare_pathways(context, measured)
+        self.assertTrue(all(p.wet_exposure_indicator is None and p.primary_indicator is None for p in unknown_results))
+        self.assertTrue(all(p.primary_indicator is not None for p in known_results))
+
+    def test_illustrative_assumptions_are_provenance_labeled(self):
+        from field_shift.adapter import evaluate_field_shift
+        sample = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
+        demo = FieldShiftInput(
+            latitude=-42.48, longitude=-73.76, concern="wet",
+            soil="clayey", soil_origin="illustrative_demo",
+            drainage="restricted", drainage_origin="illustrative_demo",
+        )
+        user = FieldShiftInput(
+            latitude=-42.48, longitude=-73.76, concern="wet",
+            soil="clayey", soil_origin="self_reported",
+            drainage="restricted", drainage_origin="self_reported",
+        )
+        demo_results = compare_pathways(sample, demo)
+        user_results = compare_pathways(sample, user)
+        # Provenance changes explanations, never the deterministic computation.
+        self.assertEqual(
+            [p.wet_exposure_indicator for p in demo_results],
+            [p.wet_exposure_indicator for p in user_results],
+        )
+        self.assertTrue(any("Illustrative assumption" in obs for p in demo_results for obs in p.observations))
+        self.assertTrue(any("Supuesto ilustrativo" in obs for p in demo_results for obs in p.observations_es))
+        self.assertTrue(any("user-reported" in obs for p in user_results for obs in p.observations))
+        self.assertTrue(all(p.agronomic_viability == "not_assessed" for p in demo_results))
+
     def test_priority_sorting_does_not_mutate_indicators(self):
         summary = seasonal_summary(synthetic_power_rows(heavy=True), "apr_sep")
         water_first = compare_pathways(summary, FieldShiftInput(latitude=-35.43, longitude=-71.66, priority="water"))
