@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useStudioPreferences } from "../StudioPreferences";
 import type { Point } from "./client";
 import "./field-shift.css";
@@ -115,6 +115,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
   const [loading, setLoading] = useState(false);
   const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
 
   const handleApplyPreset = (p: typeof PRESETS[number]) => {
     setActivePreset(p.id);
@@ -152,12 +153,19 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
 
   // Do not show results for a different place, season or reported field state.
   useEffect(() => {
+    requestRef.current?.abort();
+    requestRef.current = null;
+    setLoading(false);
     setEvaluation(null);
     setErrorMsg(null);
+    return () => { requestRef.current?.abort(); };
   }, [point?.latitude, point?.longitude, season, drainage, soil, priority, concern, csrfToken, soilOrigin, drainageOrigin]);
 
   const handleRunEvaluation = useCallback(async () => {
     if (!point || !csrfToken || !presetConfirmed) return;
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
     setLoading(true);
     setEvaluation(null);
     setErrorMsg(null);
@@ -185,6 +193,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
       const res = await fetch("/solquira-api/studio/field-shift/evaluate", {
         method: "POST",
         headers,
+        signal: controller.signal,
         body: JSON.stringify(payload),
       });
 
@@ -195,8 +204,9 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
       }
 
       const data: EvaluationResponse = await res.json();
-      setEvaluation(data);
+      if (!controller.signal.aborted) setEvaluation(data);
     } catch (err: unknown) {
+      if (controller.signal.aborted) return;
       const reason = err instanceof Error ? err.message : "";
       setErrorMsg(
         reason === "rate_limited"
@@ -206,7 +216,10 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             : (isEs ? "No se pudo consultar NASA POWER. No se generan datos sustitutivos." : "NASA POWER could not be queried. No substitute data were generated.")
       );
     } finally {
-      setLoading(false);
+      if (requestRef.current === controller) {
+        requestRef.current = null;
+        setLoading(false);
+      }
     }
   }, [point, season, drainage, soil, priority, concern, csrfToken, isEs, soilOrigin, drainageOrigin, presetConfirmed]);
 
