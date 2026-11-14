@@ -71,17 +71,17 @@ const PRESETS = [
   {
     id: "coquimbo", name: "Coquimbo",
     descriptionEs: "Explorar déficit de agua", descriptionEn: "Explore water deficit",
-    lat: -30.0400, lon: -71.2500, concern: "dry",
+    lat: -30.0400, lon: -71.2500, concern: "dry", demoSoil: "sandy", demoDrainage: "well_drained",
   },
   {
     id: "maule", name: "Maule",
     descriptionEs: "Explorar variación estacional", descriptionEn: "Explore seasonal variability",
-    lat: -35.4300, lon: -71.6600, concern: "balanced",
+    lat: -35.4300, lon: -71.6600, concern: "balanced", demoSoil: "loamy", demoDrainage: "well_drained",
   },
   {
     id: "chiloe", name: "Chiloé",
     descriptionEs: "Explorar exceso de humedad", descriptionEn: "Explore excess rainfall",
-    lat: -42.4800, lon: -73.7600, concern: "wet",
+    lat: -42.4800, lon: -73.7600, concern: "wet", demoSoil: "clayey", demoDrainage: "restricted",
   },
 ] as const;
 
@@ -105,6 +105,12 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
   const [soil, setSoil] = useState<"clayey" | "sandy" | "loamy" | "unknown">("unknown");
   const [priority, setPriority] = useState<"water" | "soil" | "diversity">("water");
   const [concern, setConcern] = useState<"dry" | "wet" | "balanced">("dry");
+  const [soilOrigin, setSoilOrigin] = useState<"self_reported" | "illustrative_demo">("self_reported");
+  const [drainageOrigin, setDrainageOrigin] = useState<"self_reported" | "illustrative_demo">("self_reported");
+  const selectedPreset = PRESETS.find((p) => p.id === activePreset);
+  const presetConfirmed = !selectedPreset || Boolean(point &&
+    Math.abs(point.latitude - selectedPreset.lat) < 0.0001 &&
+    Math.abs(point.longitude - selectedPreset.lon) < 0.0001);
 
   const [loading, setLoading] = useState(false);
   const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null);
@@ -116,19 +122,42 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
     // Never represent preset assumptions as farmer self-reported soil data.
     setSoil("unknown");
     setDrainage("unknown");
+    setSoilOrigin("self_reported");
+    setDrainageOrigin("self_reported");
     if (onSelectPreset) {
       onSelectPreset(p.lat, p.lon);
     }
+  };
+
+  useEffect(() => {
+    if (!point) return;
+    const preset = PRESETS.find((p) => p.id === activePreset);
+    if (preset && (Math.abs(point.latitude - preset.lat) > 0.0001 ||
+                   Math.abs(point.longitude - preset.lon) > 0.0001)) {
+      setActivePreset(null);
+      if (soilOrigin === "illustrative_demo") { setSoil("unknown"); setSoilOrigin("self_reported"); }
+      if (drainageOrigin === "illustrative_demo") { setDrainage("unknown"); setDrainageOrigin("self_reported"); }
+    }
+    // A new confirmed point, not a demo-button click, invalidates the old example.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [point?.latitude, point?.longitude]);
+
+  const useIllustrativeProfile = () => {
+    if (!selectedPreset || !presetConfirmed) return;
+    setSoil(selectedPreset.demoSoil);
+    setDrainage(selectedPreset.demoDrainage);
+    setSoilOrigin("illustrative_demo");
+    setDrainageOrigin("illustrative_demo");
   };
 
   // Do not show results for a different place, season or reported field state.
   useEffect(() => {
     setEvaluation(null);
     setErrorMsg(null);
-  }, [point?.latitude, point?.longitude, season, drainage, soil, priority, concern, csrfToken]);
+  }, [point?.latitude, point?.longitude, season, drainage, soil, priority, concern, csrfToken, soilOrigin, drainageOrigin]);
 
   const handleRunEvaluation = useCallback(async () => {
-    if (!point || !csrfToken) return;
+    if (!point || !csrfToken || !presetConfirmed) return;
     setLoading(true);
     setEvaluation(null);
     setErrorMsg(null);
@@ -139,6 +168,8 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
       season,
       drainage,
       soil,
+      soil_origin: soilOrigin,
+      drainage_origin: drainageOrigin,
       priority,
       concern,
     };
@@ -177,7 +208,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
     } finally {
       setLoading(false);
     }
-  }, [point, season, drainage, soil, priority, concern, csrfToken, isEs]);
+  }, [point, season, drainage, soil, priority, concern, csrfToken, isEs, soilOrigin, drainageOrigin, presetConfirmed]);
 
   return (
     <section id="qs-field-shift" className="field-shift-card" aria-label="Field Shift Decision Support">
@@ -213,6 +244,17 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             </button>
           ))}
         </div>
+        {selectedPreset && (
+          <div className="field-shift-demo-option">
+            <button className="preset-chip" type="button" disabled={!presetConfirmed} onClick={useIllustrativeProfile}>
+              {isEs ? "Cargar perfil de suelo ilustrativo" : "Load illustrative field profile"}
+            </button>
+            <p>{isEs
+              ? "Opcional: supuestos hipotéticos para mostrar cómo cambia la comparación. No son mediciones ni promedios estadísticos regionales."
+              : "Optional hypothetical assumptions to explore trade-offs. Neither measurements nor statistical regional averages."}</p>
+            {!presetConfirmed && <p role="status">{isEs ? "Primero confirma el lugar de ejemplo." : "Confirm the example location first."}</p>}
+          </div>
+        )}
       </div>
 
       {/* Parameters Grid */}
@@ -242,11 +284,11 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
           </select>
         </div>
         <div className="field-shift-control">
-          <label htmlFor="fs-drainage">{isEs ? "Drenaje de suelo (auto-reportado):" : "Soil drainage (self-reported):"}</label>
+          <label htmlFor="fs-drainage">{isEs ? "Drenaje del suelo:" : "Soil drainage:"}</label>
           <select
             id="fs-drainage"
             value={drainage}
-            onChange={(e) => setDrainage(e.target.value as typeof drainage)}
+            onChange={(e) => { setDrainage(e.target.value as typeof drainage); setDrainageOrigin("self_reported"); }}
           >
             <option value="unknown">{isEs ? "Desconocido / Sin medir" : "Unknown / Unmeasured"}</option>
             <option value="well_drained">{isEs ? "Bien drenado" : "Well drained"}</option>
@@ -255,11 +297,11 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
         </div>
 
         <div className="field-shift-control">
-          <label htmlFor="fs-soil">{isEs ? "Textura del suelo (auto-reportada):" : "Soil texture (self-reported):"}</label>
+          <label htmlFor="fs-soil">{isEs ? "Textura del suelo:" : "Soil texture:"}</label>
           <select
             id="fs-soil"
             value={soil}
-            onChange={(e) => setSoil(e.target.value as typeof soil)}
+            onChange={(e) => { setSoil(e.target.value as typeof soil); setSoilOrigin("self_reported"); }}
           >
             <option value="unknown">{isEs ? "Desconocida" : "Unknown"}</option>
             <option value="clayey">{isEs ? "Arcilloso (retentivo/lento)" : "Clayey (retentive/slow)"}</option>
@@ -283,14 +325,16 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
       </div>
 
       <p className="field-shift-method">
-        {isEs ? "El drenaje y la textura se dejan como desconocidos hasta que tú los declares. Un punto de referencia no describe por sí mismo una parcela." : "Drainage and texture remain unknown until you report them. A reference point does not characterize a farm parcel."}
+        {isEs
+          ? (soilOrigin === "illustrative_demo" || drainageOrigin === "illustrative_demo" ? "Perfil de ejemplo activo: condiciones hipotéticas, no observadas ni representativas de la región." : "Condiciones declaradas por ti o desconocidas: aún sin verificación de terreno.")
+          : (soilOrigin === "illustrative_demo" || drainageOrigin === "illustrative_demo" ? "Example profile active: hypothetical conditions, neither observed nor representative of the region." : "Conditions you reported or left unknown; not field-verified.")}
       </p>
       <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
         <button
           type="button"
           className="field-shift-action-btn"
           onClick={handleRunEvaluation}
-          disabled={!point || !csrfToken || loading}
+          disabled={!point || !csrfToken || loading || !presetConfirmed}
         >
           {loading ? (isEs ? "Consultando NASA POWER..." : "Querying NASA POWER...") : (isEs ? "Evaluar alternativas con NASA" : "Evaluate alternatives with NASA")}
         </button>
@@ -302,6 +346,11 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
         )}
       </div>
 
+      {selectedPreset && !presetConfirmed && (
+        <p className="field-shift-method" role="status">
+          {isEs ? "Confirma el nuevo punto antes de evaluar; no se reutilizan resultados del lugar anterior." : "Confirm the new point before evaluation; previous-place results are not reused."}
+        </p>
+      )}
       {!point && (
         <p className="field-shift-method" role="status">
           {isEs ? "Confirma primero el territorio seleccionado para habilitar la evaluación." : "Confirm your selected place before running the evaluation."}
