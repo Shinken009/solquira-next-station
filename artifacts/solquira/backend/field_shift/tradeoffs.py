@@ -107,21 +107,21 @@ def compare_pathways(context: dict, field_input: FieldShiftInput) -> list[Pathwa
             )
 
         if field_input.drainage == "restricted":
-            observations.append("Restricted soil drainage is user-reported; assess risk of prolonged root saturation.")
-            observations_es.append("El drenaje limitado fue declarado por la persona usuaria; verificar posibles periodos de saturación radicular.")
+            observations.append("Restricted drainage assumed for a demonstration; not a local measurement or regional average. Assess potential root saturation." if field_input.drainage_origin == "illustrative_demo" else "Restricted soil drainage is user-reported; assess risk of prolonged root saturation.")
+            observations_es.append("Drenaje limitado supuesto para una demostración; no es una medición ni un promedio regional. Revisar posible saturación radicular." if field_input.drainage_origin == "illustrative_demo" else "El drenaje limitado fue declarado por la persona usuaria; verificar posibles periodos de saturación radicular.")
         elif field_input.drainage == "unknown":
             observations.append("Drainage condition is unknown; wet-season soil trafficability cannot be determined.")
             observations_es.append("El drenaje es desconocido; no puede estimarse el tránsito sobre el suelo durante periodos húmedos.")
 
         if field_input.soil == "clayey":
-            observations.append("Clayey texture self-reported: slow water infiltration and workability delays after rain.")
-            observations_es.append("Textura arcillosa declarada: podría dificultar la infiltración y retrasar labores después de lluvias.")
+            observations.append("Illustrative assumption: clayey texture may slow infiltration and delay fieldwork after rain; not measured on-site." if field_input.soil_origin == "illustrative_demo" else "Clayey texture self-reported: slow water infiltration and workability delays after rain.")
+            observations_es.append("Supuesto ilustrativo: una textura arcillosa podría dificultar la infiltración; no se midió en el terreno." if field_input.soil_origin == "illustrative_demo" else "Textura arcillosa declarada: podría dificultar la infiltración y retrasar labores después de lluvias.")
         elif field_input.soil == "sandy":
-            observations.append("Sandy texture self-reported: rapid drainage and low plant-available water holding capacity.")
-            observations_es.append("Textura arenosa declarada: puede favorecer el drenaje rápido y reducir la retención de agua disponible.")
+            observations.append("Illustrative assumption: sandy texture may drain rapidly and retain less plant-available water; not measured on-site." if field_input.soil_origin == "illustrative_demo" else "Sandy texture self-reported: rapid drainage and low plant-available water holding capacity.")
+            observations_es.append("Supuesto ilustrativo: una textura arenosa podría drenar rápido y retener menos agua; no se midió en el terreno." if field_input.soil_origin == "illustrative_demo" else "Textura arenosa declarada: puede favorecer el drenaje rápido y reducir la retención de agua disponible.")
         elif field_input.soil == "loamy":
-            observations.append("Loamy texture self-reported: balanced retention, but local profile depth remains unmeasured.")
-            observations_es.append("Textura franca declarada: retención potencialmente equilibrada; profundidad del perfil aún sin medir.")
+            observations.append("Illustrative assumption: loamy texture may balance retention; field texture and profile depth have not been measured." if field_input.soil_origin == "illustrative_demo" else "Loamy texture self-reported: balanced retention, but local profile depth remains unmeasured.")
+            observations_es.append("Supuesto ilustrativo: una textura franca podría equilibrar la retención; no se ha medido el perfil del terreno." if field_input.soil_origin == "illustrative_demo" else "Textura franca declarada: retención potencialmente equilibrada; profundidad del perfil aún sin medir.")
 
         if field_input.previous_crop == "cereal" and plan["sequence"][0] == "Cereal":
             observations.append("Initial rotation step repeats a cereal crop: inspect disease carryover and weed pressure.")
