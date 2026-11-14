@@ -1,0 +1,28 @@
+name: Next Station backend security and science
+on:
+  push:
+    branches: ["fix/field-shift-*"]
+  pull_request:
+    branches: ["main"]
+permissions:
+  contents: read
+jobs:
+  python-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: artifacts/solquira/backend/requirements.lock.txt
+      - name: Install pinned backend dependencies
+        run: python -m pip install -r artifacts/solquira/backend/requirements.lock.txt
+      - name: Run backend tests without production credentials
+        env:
+          SOLQUIRA_STUDIO_MODE: "1"
+          SOLQUIRA_STUDIO_GEODATA: "0"
+        run: python -m unittest discover -s artifacts/solquira/backend -p "test_*.py"
+      - name: Check deterministic fixtures
+        run: python scripts/check-fixtures.py
