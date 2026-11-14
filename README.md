@@ -1,289 +1,130 @@
-# Solquira — Understand the land. Cultivate the future.
+# Solquira — Next Station
+## *Understand the land. Cultivate the future.*
 
-**Open-source environmental field intelligence for dryland communities.**
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![NASA Space Apps 2026](https://img.shields.io/badge/NASA%20Space%20Apps-2026%20Field%20Shift-orange.svg)](https://www.spaceappschallenge.org/2026/challenges/field-shift-adapting-farms-with-nasa-data/)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live%20Preview-success.svg)](https://solquira-next-station.vercel.app)
 
-Solquira helps communities, land stewards, growers and advisers explore landscape context,
-inspect weather and evidence, and prepare informed field observations. It was created in response
-to desertification and land degradation, with agriculture as one application rather than its
-entire scope. Short-term forecasts and synthetic examples are **not** a diagnosis of
-desertification, measured environmental impact or a validated long-term prediction.
+**Solquira — Next Station** is an open-source territorial decision-support platform created for the **NASA Space Apps Challenge 2026: Field Shift — Adapting Farms with NASA Data**.
 
-Built for the **Nebius × NVIDIA Global AI Hackathon**, **Best Apps and Agents** track.
-This repository documents the implemented code, local execution, tests, data provenance
-and scientific limits. Planned integrations are identified separately from working features.
+Developed by **R4Logic**, Next Station extends the mature, full-scale Solquira Studio into an actionable seasonal adaptation journey:
+$$\text{Confirmed Territory} \longrightarrow \text{NASA Earth Observation} \longrightarrow \text{Seasonal Signal} \longrightarrow \text{Self-Reported Constraints} \longrightarrow \text{Rotation Tradeoffs} \longrightarrow \text{Informed Human Decision}$$
 
-## The experience
+---
 
-The header offers **Español / English** and **Light / Dark** controls. The first
-visit follows the browser language (Spanish or English) and starts in light
-mode unless the visitor explicitly saved another theme. Only those two
-preferences are stored locally; location, answers and field notes are not added
-to persistent storage by these controls. Switching language or appearance does
-not recreate the Cesium map, change the selected point, or refresh sources.
+## Live Deployments & Repository
 
-The journey is **place → forecast → next check**. Device location and map picks
-first show a marker to review; confirmation remains a separate action. Source,
-privacy and method details stay available in accessible disclosures, while map
-attribution stays visible. Teaching examples are opt-in disclosures, separate
-from the selected place; an explicit example link opens the relevant section.
+- **Official Repository:** [https://github.com/Shinken009/solquira-next-station](https://github.com/Shinken009/solquira-next-station)
+- **Live Application:** [https://solquira-next-station.vercel.app](https://solquira-next-station.vercel.app)
+- **Verified Vercel Preview:** [https://solquira-next-station-g6jywo2ct-shinken009s-projects.vercel.app](https://solquira-next-station-g6jywo2ct-shinken009s-projects.vercel.app)
 
-The workspace has four keyboard-accessible areas: **Territorio (Territory),
-Anticipación (Anticipation), Orientación (Guidance), and Evidencia (Evidence)**.
-Switching areas preserves the map, selected place, forecast, scenario, results,
-session and land record. Source requests occur through user actions, not navigation.
+---
 
+## Key Features
 
-1. **Choose your place.** Mark the earth in Cesium or explicitly request device GPS, review
-   the marker, then confirm. Typed coordinates are an accessible alternative, not a requirement.
-   Without permission the map remains neutral. GPS and manually selected points stay distinct;
-   no late GPS reply replaces a newer choice. Confirmation requests the seven-day forecast when
-   geographic sources are enabled. The original selection is retained; only the request is rounded.
-2. **Tell us what matters.** A short conditional journey asks about land use, the concern or
-   exploration goal, a reported sign, duration and practical barriers. It asks four or six questions
-   including the place, without pretending these answers are instrumental measurements.
-3. **Prepare one manageable check.** Local deterministic guidance helps structure a field visit,
-   not prescribe sowing, irrigation or treatment. A person can review a suggested draft in the
-   existing land record; nothing is saved to Kobo or shared automatically.
-4. **Read the environmental context.** Inspect P1 forecast indicators; request ERA5 history only
-   when wanted. Dates, resolution, provenance and unavailable states stay visible.
-5. **Keep examples separate.** Four synthetic teaching landscapes, crop-path comparisons and
-   optional reference briefs remain available. They are not measurements of the selected place.
-   The optional AI wording remains an explicit action protected by the existing budget.
+### 1. Full-Product Studio Parity (No Reduced Standalone Toy)
+- **Four Core Workspace Areas:** *Territorio* (Territory), *Anticipación* (Anticipation), *Orientación* (Guidance), and *Evidencia* (Evidence).
+- **Interactive 3D Geospatial Visualization:** High-performance **CesiumJS** globe with WebGL rendering and resilient 2D fallbacks (OpenStreetMap and Natural Earth).
+- **True Bilinguality (ES/EN):** Fluent interface in Spanish and English with persistent accessibility preferences (Light / Dark themes).
+- **Session Security & Privacy:** In-process opaque sessions, CSRF protection (`X-Solquira-CSRF`), strict Content Security Policy (CSP), and client-side PII isolation.
 
-The map uses an OpenStreetMap reference layer, bundled Natural Earth fallback and optional
-NASA GIBS imagery. Map selection does not establish a parcel boundary or survey accuracy.
-Kobo import, shared observation storage and team authorization are not implemented in this release.
+### 2. Multi-Season NASA POWER Historical Integration
+- Direct integration with the **NASA POWER Daily Point API (AG Community)** for historical precipitation (`PRECTOTCORR`) and 2-meter air temperature (`T2M`).
+- **Strict Seasonal Aggregation Windows:** Supports both `apr_sep` (Austral Autumn/Winter) and `oct_mar` (Austral Spring/Summer) across 5 comparative years (2021–2025).
+- **Fail-Closed Completeness Policy:** Rejects incomplete seasons rather than distorting metrics with artificial zero-padding. At least three fully observed seasons are required before calculating multi-year averages.
+- **Sentinel & Unit Validation:** Enforces `time-standard=UTC`, validates physical bounds ($0 \le \text{rain} \le 1500$ mm/day, $-90 \le T \le 75$ °C), and treats values $\le -900$ as absent.
 
-## Environmental anticipation and historical context
+### 3. Field Shift: Deterministic Tradeoff Explorer
+- **Four Comparative Rotation Pathways:**
+  1. *Continue baseline pattern:* Cereal $\to$ Cereal $\to$ Cereal.
+  2. *Diversify with legumes:* Cereal $\to$ Legume $\to$ Cover.
+  3. *Prioritize continuous living cover:* Cover $\to$ Cereal $\to$ Legume.
+  4. *Integrate forage pasture:* Forage $\to$ Legume $\to$ Forage.
+- **Observable Hydroclimatic Responsiveness:** NASA signals (dry-day share $<1$ mm/day and heavy rain frequency $\ge 20$ mm/day) directly alter calculated drought and waterlogging exposure indices.
+- **Self-Reported Field Inputs:** Incorporates operator-stated soil drainage (`well_drained`, `restricted`, `unknown`), texture (`clayey`, `sandy`, `loamy`), and exploration priorities (`water`, `soil`, `diversity`).
+- **Ethical Scientific Disclosure:** All alternatives are explicitly tagged with `agronomicViability = "not_assessed"` to prevent automated, unverified agricultural prescriptions.
 
-Seven-day indicators are computed in Python from the validated Open-Meteo forecast:
-precipitation and reference ET₀ totals (mm), their arithmetic difference (mm),
-minimum/maximum temperature (°C), days below **1 mm/day**, longest consecutive
-low-precipitation run, and contiguous episodes at or above **1 mm/day**. Episode
-concentration is the largest episode's share of seven-day precipitation, not an
-intensity or flood-risk estimate. Zero precipitation produces no percentage share.
-These declared descriptive thresholds are not crop-specific stress thresholds.
-Source, UTC dates, retrieval time, units, method, missing observations and limitations
-accompany the indicators. Precipitation includes snow water equivalent. The
-precipitation−ET₀ difference is **not soil moisture, a root-zone water balance or
-irrigation need**; one dry forecast week does not diagnose desertification.
+### 4. Demonstrative Regional Presets
+- **Coquimbo, Chile** (`-30.0400, -71.2500`): Water deficit pressure, living soil cover, and desertification protection in semi-arid drylands.
+- **Maule, Chile** (`-35.4300, -71.6600`): Seasonal precipitation variability and crop rotation transitions in Mediterranean agricultural valleys.
+- **Chiloé, Chile** (`-42.4800, -73.7600`): Excess surface water, machinery trafficability, and drainage management in temperate wet landscapes (*noting that wet landscapes face waterlogging, distinct from arid desertification*).
+- *Global Free Selection:* The operator can freely click, search, or input coordinates anywhere on the planet.
 
-An optional **explicit historical lookup** compares the latest fully available
-calendar month with the same month in **1991–2020**, using fixed **ERA5** reanalysis
-from Open-Meteo. It respects the five-day source lag and requires all target days
-and thirty complete baseline months. Results include monthly totals, absolute mm
-anomaly, percentage anomaly (unavailable below a 0.01 mm reference), grid location,
-coverage and source. This is approximately 0.25° modeled reanalysis, not a measured
-parcel, a seasonal forecast, SPI or a degradation diagnosis. Missing data remain
-unavailable. Requests are bounded, cached for 24 hours, and limited per process to one uncached lookup/hour and four/day. Long requests count as multiple source API units, not one call; changing workspace
-areas does not fetch decades of data. Geographic sources must be enabled.
+---
 
-The free Open-Meteo service is for noncommercial use with attribution; commercial
-operation requires reviewing its terms separately. No subscription is activated.
-Quantitative vegetation/NDVI/NDMI trends are **not implemented**: rendered GIBS
-true-color JPG tiles do not supply the required numeric bands, cloud/quality masks
-or seasonal comparisons. The current imagery and map functionality are preserved.
-
-## NASA POWER and illustrative comparisons
-
-NASA POWER is a separate, explicit historical lookup in **Anticipation**, after
-confirming a point and with geographic sources enabled. Select 1–31 completed
-days; the protected `POST /solquira-api/studio/power` route rounds the query
-coordinates and reuses the bounded daily connector and cache. Its UTC series
-shows corrected precipitation (mm/day) and mean air temperature (°C), with
-missing values left missing. See the [NASA POWER Daily API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/).
-It is gridded historical context, not a forecast, parcel measurement or soil
-assessment. It does not populate the long-term evidence slot, attach data to
-the assistant or change any scenario score. Open-Meteo forecast and ERA5
-comparison remain separate.
-
-NASA POWER has independent admission (two active lookups, four per session
-and twelve per process per minute). Waiting for the provider does not reserve
-a slot for forecasts, comparisons or evidence review. A repeated in-flight
-query is not queued; an available cached series can be read without waiting
-for another series to load. If limited, Studio shows the retry delay without
-automatically retrying. Invalid dates and an unverified session have distinct
-recovery actions.
-
-The illustrative rotation rubric weights history, water assumptions and a
-synthetic diversity index. The legacy `suelo` input/output key means
-**rotation history** in that rubric, not soil suitability; `scoreWeightSemantics`
-states the mapping explicitly. Numeric outputs and eligibility rules are unchanged.
-
-## Territorial evidence inventory
-
-The explicit **Review forecast evidence** action adds a metadata-only snapshot for the confirmed
-point. It does not fetch environmental sources or send answers to a model. The API keeps
-seven distinct metadata slots for forecast context, long-term climate, land-cover change,
-land productivity, soil organic carbon, terrain and field observations. The public interface
-shows only operational source context and actions: it does not advertise unconnected layers
-as inactive features or a coming-soon catalogue. An optional opaque forecast reference
-can reuse only source-validated context belonging to the same session and rounded query point;
-coordinates in the inventory retain the original selection. A missing or expired reference
-never authorizes acquisition of another forecast.
-
-The inventory distinguishes **available, missing, unavailable, stale and not applicable**.
-Availability concerns the included metadata, not scientific validation of land condition.
-Missing source identity, version, coverage, resolution or units remain null, never zero or an
-invented global footprint. The 0.001° query rounding is not source resolution or GPS accuracy.
-Metadata gaps inform practical observation prompts, not greyed-out capability cards. Local land-record notes
-and existing ERA5 comparisons are not silently imported, transmitted or persisted by this action.
-
-This is `inventory_only`, `scientific_validation=not_validated`, `is_medalus_r=false`.
-It computes no susceptibility score, degradation class, MEDALUS-R index, irrigation dose,
-restoration ranking or SDG 15.3.1 result. The [UNCCD LDN principles](https://www.unccd.int/land-and-life/land-degradation-neutrality/ldn-principles)
-identify land-cover change, productivity and soil organic carbon as distinct indicators and
-require local interpretation; merely listing metadata does not implement their assessment.
-The other layers remain explicit evidence gaps pending separately reviewed data adapters.
-No new data provider, background job, raster processing or inference dependency is introduced.
-
-## Bounded orchestration
-
-**Python owns the calculations and policy; NVIDIA Nemotron improves the language.**
-
-The model uses the exact Token Factory catalogue ID
-`nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` at `https://api.tokenfactory.nebius.com/v1/`.
-It receives coordinate-free reference context and a small set of approved action identifiers.
-Its compact response contains exactly three action details, not a complete regenerated card.
-
-The `/v1/field-brief` endpoint supports JSON and server-sent events:
+## Architecture Overview
 
 ```text
-complete Python skeleton → validated action fields → authoritative final card
+       [React + TypeScript + Cesium Studio SPA (Vercel Independent)]
+                    | Same-origin: /solquira-api/*
+                    v
+       [Vercel Rewrites Proxy with Strict CSP & HSTS]
+                    |
+                    v
+       [FastAPI Backend (Session, CSRF, Concurrency Admission)]
+         |-- /solquira-api/studio/bootstrap
+         |-- /solquira-api/studio/location
+         |-- /solquira-api/studio/evaluate
+         |-- /solquira-api/studio/power           (1–31 day bounded query)
+         `-- /solquira-api/studio/field-shift/*   (New additive namespace)
+               |-- /evaluate                      (Multi-season NASA + Tradeoffs)
+               `-- /healthz                       (Domain healthcheck)
+                    |
+                    v
+       [NASA POWER Daily Point API (LaRC AG)]
 ```
 
-- Python retains soil/water bands, action order, titles, labor labels and pathways.
-- Pydantic and policy validation reject invalid identifiers, duplicate fields, quantities,
-  links and unsupported text patterns before final acceptance.
-- The brief uses one request, a 350-output-token cap and a three-second route deadline.
-  The separate forecast-linked agent has a 700-output-token cap.
-- A rejected, truncated or late composition ends with the complete field-rules card in the
-  same JSON shape. An interrupted stream restores the initial card; checklist edits wait for final.
-- Session/CSRF controls and bounded admission protect the Studio API; hosted inference additionally requires a persistent budget ledger.
-  Credentials stay on the server. No model call occurs just by opening the page.
+---
 
-## Evidence layers
+## Local Development & Test Execution
 
-| Layer                                    | Current implementation                                              |
-| ---------------------------------------- | ------------------------------------------------------------------- |
-| Open-Meteo seven-day forecast            | Optional live source; coordinates rounded to 0.001°                 |
-| ERA5 monthly precipitation context      | Explicit optional lookup; fixed 1991–2020 same-month baseline          |
-| NASA GIBS satellite imagery              | Optional geographic imagery layer                                   |
-| Soil and water reference profiles        | Four synthetic teaching inputs, calculated in Python                |
-| Crop pathways and comparison rules       | Explicit demonstration catalogue and deterministic rules            |
-| Nemotron action wording                  | Server-side Token Factory integration, enabled only by the operator |
-| SoilGrids / FAO quantitative acquisition | Future integration; not called by this build                        |
+### Prerequisites
+- Python 3.11+ (tested on Python 3.12 and 3.14)
+- Node.js 20+ (tested on Node 25.8.2)
+- pnpm 10+ (tested on pnpm 11.0.0)
 
-The four reference profiles are deliberately contrasting examples, not regional soil measurements:
-
-| Map reference                      | Soil life | Water held |
-| ---------------------------------- | --------- | ---------- |
-| Sahel / Ouagadougou                | Weak      | Fair       |
-| Chilean dryland valley / Coquimbo  | Weak      | Low        |
-| Mediterranean farmland / Andalusia | Building  | Fair       |
-| East African plateau               | Strong    | Good       |
-
-Selecting another point clears the previous brief. Arbitrary coordinates do not inherit the
-nearest reference profile. The live forecast panel remains separate from the brief's two
-weather scenarios. Local agronomic validation and impact evaluation are next-stage work.
-
-## Run locally
-
-Requirements: Python 3.12+ (the hosted Docker image uses Python 3.12), Node 22+, pnpm 11.
-
-### Windows PowerShell
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r artifacts/solquira/backend/requirements.txt
-pnpm.cmd install --frozen-lockfile
-pnpm.cmd --filter @workspace/solquira build
-python scripts/run-studio-local.py --geodata
-```
-
-### macOS / Linux
-
+### 1. Install Dependencies
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r artifacts/solquira/backend/requirements.txt
+# Frontend & Monorepo workspace
 pnpm install --frozen-lockfile
-pnpm --filter @workspace/solquira build
-python scripts/run-studio-local.py --geodata
+
+# Backend Python dependencies
+pip install -r artifacts/solquira/backend/requirements.txt
 ```
 
-Open <http://127.0.0.1:8036>. The default launcher does not read provider credentials or enable
-inference. It serves Python field rules; `--geodata` separately enables the forecast connection.
-Without that option, the reference brief still works locally, while live geographic data does not.
-This is a local server workflow, not an installed offline application.
-
-### Enabling inference
-
-The model integration is included in the source. The operator supplies the server-side key,
-trusted ingress settings and an existing approved persistent budget. The deployment launcher is
-`scripts/run-studio-hosted.py`; configuration validation is available through its `--check` mode.
-Do not expose the loopback launcher as a public service or place a key in a frontend variable.
-
-Runtime credentials, ledger contents and deployment-specific settings are not stored in this
-repository. The deterministic reference workflow does not require provider credentials.
-The model and spending boundaries can be inspected directly in
-`artifacts/solquira/backend/dryland_brief.py`,
-`artifacts/solquira/backend/studio_runtime.py` and
-`artifacts/solquira/backend/studio_budget.py`.
-
-## API surface in Studio mode
-
-| Route                                                  | Purpose                                                                 |
-| ------------------------------------------------------ | ----------------------------------------------------------------------- |
-| `GET /solquira-api/healthz`                            | Liveness                                                                |
-| `GET /solquira-api/studio/bootstrap`                   | Establish opaque session cookie and CSRF token; expose effective limits |
-| `POST /solquira-api/studio/evidence`                   | Explicit metadata-only territorial evidence inventory                    |
-| `POST /solquira-api/studio/evaluate`                   | Deterministic crop-path comparison                                      |
-| `POST /solquira-api/studio/history`                    | Explicit bounded ERA5 historical precipitation comparison               |
-| `POST /solquira-api/studio/location`                   | Optional Open-Meteo context for rounded coordinates                     |
-| `POST /solquira-api/studio/agent`                      | Tool-grounded answer over the attached context                          |
-| `GET /v1/field-payload?scenario=dry&place=ouagadougou` | Canonical reference payload (session + CSRF)                            |
-| `POST /v1/field-brief`                                 | Typed brief; JSON by default, SSE with `Accept: text/event-stream`      |
-
-Bootstrap establishes the session; protected operations require its cookie and
-`X-Solquira-CSRF` token. Health is public. The legacy `/api/**` surface is closed in Studio mode.
-
-## Verify
-
-Run from the repository root with the virtual environment active:
-
-```powershell
+### 2. Run Test Battery
+```bash
+# Backend test suite (378 tests)
 python -m unittest discover -s artifacts/solquira/backend -p "test_*.py"
-pnpm.cmd run typecheck
+
+# Monorepo TypeScript typecheck
+pnpm run typecheck
+
+# Deterministic engine hash & fixtures validation (135 evaluations)
 python scripts/check-fixtures.py
-node scripts/qa-environment-navigation.mjs http://127.0.0.1:8036
-node scripts/qa-territorial-journey.mjs http://127.0.0.1:8036
-node scripts/qa-land-evidence.mjs http://127.0.0.1:8036
-node scripts/qa-cesium-selection.mjs http://127.0.0.1:8036
-node scripts/qa-studio-preferences.mjs http://127.0.0.1:8036
+
+# Client land evidence integration tests
 node --test scripts/test-land-evidence-client.mjs
 ```
 
-Browser QA expects the default local, inference-disabled server. It checks the card, scenario
-changes, reference selection, source labels, contrast and layout without contacting a provider.
-The fixture check compares the stored examples with the current Python engine and its hash.
-The preferences regression exercises both languages and themes at 1440, 390 and
-320 px, a declared device-location fixture, persistent preferences, unchanged
-draft coordinates and Cesium canvas, disclosures, and measured text contrast.
-It blocks external requests and never confirms the fixture point or calls a model.
+### 3. Build Frontend for Production
+```bash
+pnpm --filter @workspace/solquira build
+```
 
-## Sources and credit
+---
 
-| Component                  | Provider                                                | Attribution / terms                         |
-| -------------------------- | ------------------------------------------------------- | ------------------------------------------- |
-| Forecast and reference ET₀ | [Open-Meteo](https://open-meteo.com/)                   | CC BY 4.0                                   |
-| Historical precipitation | [Open-Meteo ERA5 archive](https://open-meteo.com/en/docs/historical-weather-api) | [Noncommercial API terms](https://open-meteo.com/en/terms), CC BY 4.0 |
-| MODIS imagery              | [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/) | Imagery courtesy NASA EOSDIS GIBS / LP DAAC |
-| Basemap geometry           | [Natural Earth](https://www.naturalearthdata.com/)      | Public domain                               |
-| Globe rendering            | [CesiumJS](https://cesium.com/)                         | Apache-2.0                                  |
-| Interface icons            | [Lucide](https://lucide.dev/)                           | ISC                                         |
+## Data Provenance & Scientific Disclaimers
 
-## License
+1. **Gridded Model Estimates:** Data provided by NASA POWER (Prediction Of Worldwide Energy Resources) are satellite-assimilated global meteorological grids, not on-site farm weather stations or parcel sensors.
+2. **Historical vs. Forecast:** Multi-season 5-year observations (2021–2025) provide comparative historical climatological context, not a seasonal forecast or yield prediction for upcoming seasons.
+3. **No Automated Prescriptions:** Solquira Next Station is a decision-support and hypothesis exploration tool. It does not replace field visits, soil lab tests, or certified agronomist counsel.
+4. **NASA Acknowledgment:** NASA data are in the public domain and used under NASA's open data policy. Mention of NASA or its missions does not imply endorsement, certification, or commercial sponsorship.
 
-Apache License 2.0 — see `LICENSE`. Third-party attributions are listed in `NOTICE`.
+---
+
+## Provenance & License
+
+- **Base Project:** Derived from the open-source [Solquira](https://github.com/Shinken009/solquira) codebase created by Roberto Pizarro and the R4Logic team.
+- **License:** Distributed under the [Apache License, Version 2.0](LICENSE).
+- **Notices:** Third-party licenses, data sources, and libraries are cataloged in [NOTICE](NOTICE) and [docs/PROVENANCE-2026-11-14.md](docs/PROVENANCE-2026-11-14.md).
