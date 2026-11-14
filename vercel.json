@@ -4,6 +4,14 @@
   "outputDirectory": "artifacts/solquira/dist/public",
   "rewrites": [
     {
+      "source": "/solquira-api/studio/field-shift/evaluate",
+      "destination": "/api/field_shift"
+    },
+    {
+      "source": "/solquira-api/studio/field-shift/healthz",
+      "destination": "/api/field_shift"
+    },
+    {
       "source": "/solquira-api/:path*",
       "destination": "https://api-solquira.r4logic.lat/solquira-api/:path*"
     },
@@ -60,5 +68,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/field_shift.py": {
+      "maxDuration": 60
+    }
+  }
 }
