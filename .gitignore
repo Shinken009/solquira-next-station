@@ -73,3 +73,6 @@ scripts/secrets.local.env
 # Engram local memory artifacts (config stays on disk, chunks never committed)
 .engram/
 .playwright-mcp/
+
+.vercel
+.env*
