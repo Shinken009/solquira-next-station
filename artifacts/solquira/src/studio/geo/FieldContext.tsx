@@ -278,7 +278,7 @@ export default function FieldContext({
             <span className="qg-eyebrow">
               <MapPin size={17} /> {t("Start with a place")}</span>
             <h2 id="qg-title" tabIndex={-1}>
-              {t("Put your land in context.")}</h2>
+              {t("The landscape in context.")}</h2>
             <p>
               {t("Choose a point once. Its map, forecast and field record stay with you as you move through the workspace.")}</p>
           </div>
@@ -297,7 +297,7 @@ export default function FieldContext({
         <div className="qg-grid">
           <div className="qg-location">
             <span className="qg-step">{t("01 / Choose your place")}</span>
-            <h3>{t("The story starts here.")}</h3>
+            <h3>{t("Location selection.")}</h3>
             <p className="qg-location-hint">
               {t("Choose on the map or use your location. Review the marker before continuing.")}</p>
             <div className="qg-place-actions">
@@ -447,7 +447,7 @@ export default function FieldContext({
       >
         <div className="qg-heading">
           <div>
-            <span className="qg-eyebrow">{t("Plan your next visit")}</span>
+            <span className="qg-eyebrow">{t("For your next field visit")}</span>
             <h2>{t("The coming week at your place.")}</h2>
             <p>
               {t("See when rain and temperature may change, then choose what to check on your next visit.")}</p>
@@ -463,7 +463,7 @@ export default function FieldContext({
             <h3 tabIndex={-1}>
               {enabled && !offline
                 ? t("The next seven days")
-                : t("Read the landscape.")}
+                : t("Landscape context.")}
             </h3>
             <span>
               {data
