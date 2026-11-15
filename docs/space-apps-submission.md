@@ -27,6 +27,24 @@ Using Chile's Coquimbo, Maule, and Chiloé as starting examples, the application
 
 **Outcome and limits.** This is a working, open-source decision-support prototype: it clarifies past climate variability, makes assumptions visible, and guides what a user should investigate next. It does not claim validated crop suitability, predict future seasonal weather, or replace soil testing and local agronomic advice. Further validation would require local soil and crop evidence, independent field trials, and farmer feedback.
 
+## Independent science audit and source-code distinction
+
+Detailed reproducible methodology:
+https://github.com/Shinken009/solquira-next-station/blob/main/docs/field-shift-methodology.md
+
+**Important for jury transparency:** Solquira is a pre-existing, independently
+developed open-source geospatial platform. **Next Station** is the 2026 NASA
+challenge-focused extension for seasonal NASA evidence and illustrative field
+comparisons. Acknowledge that origin explicitly rather than claiming every
+platform component was built during the hackathon.
+
+The historic temperature signal is available as environmental context; it is
+not a direct numerical input into the current pathway indicator formulas.
+Likewise, demo soil texture changes written explanations rather than numerical
+exposure indicators. The comparison uses category-level heuristics, not a
+validated local crop-characteristics database, so no real-world crop
+viability prediction is claimed.
+
 ## Public project link (Project*)
 
 https://solquira-next-station.vercel.app
