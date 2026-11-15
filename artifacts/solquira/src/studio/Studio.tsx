@@ -941,7 +941,7 @@ export default function Studio() {
           data-testid="journey-next-step"
         >
           <div>
-            <strong>{t("Place → forecast → next check")}</strong>
+            <strong>{t("Place → evidence → next check")}</strong>
             <p>
               {briefPoint
                 ? t("Your place stays selected across all four areas.")
@@ -979,7 +979,7 @@ export default function Studio() {
                       "Explore the landscape and preparation questions. Historical NASA comparisons require an available data service.",
                     )
                   : t(
-                      "From drylands to rainy landscapes, explore seasonal evidence, add what you know about the field, and compare alternatives without treating them as prescriptions.",
+                      "From drylands to rainy regions, explore historical NASA data, add your field knowledge, and compare illustrative management choices—not agronomic prescriptions.",
                     )}
               </p>
               <div className="qs-hero-actions">
