@@ -966,12 +966,12 @@ export default function Studio() {
             <div className="qs-intro-copy">
               <div className="qs-kicker">
                 <span className="qs-dot" />{" "}
-                {t("From changing rainfall to choices for the next season.")}
+                {t("Climate evidence. Local knowledge. Better-informed choices.")}
               </div>
               <h1 id="qs-title">
-                {t("Understand this land.")}
+                {t("Every landscape is different.")}
                 <br />
-                {t("Prepare the next season.")}
+                {t("The next season starts with evidence.")}
               </h1>
               <p>
                 {mode === "offline"
@@ -1002,7 +1002,7 @@ export default function Studio() {
               <strong>{t("Healthy land. Resilient communities.")}</strong>
               <p>
                 {t(
-                  "Water, soil and livelihoods belong in the same conversation. Turn what you know about your land into a practical next observation, with sources and limits you can review.",
+                  "Water, soil and livelihoods are connected. Local field observations add context to environmental data, with sources and limitations kept visible.",
                 )}
               </p>
             </div>
@@ -1017,7 +1017,7 @@ export default function Studio() {
                 <MapPin size={19} />
               </span>
               <div>
-                <small>{t("1. Understand the place")}</small>
+                <small>{t("1. Place and context")}</small>
                 {mode === "service" && bootstrap?.geodata?.enabled
                   ? t("Read the coming weather")
                   : t("See the wider landscape")}
@@ -1033,8 +1033,8 @@ export default function Studio() {
               <div>
                 <small>
                   {mode === "offline"
-                    ? t("2. Explore a choice")
-                    : t("2. Share what matters")}
+                    ? t("2. Illustrative alternatives")
+                    : t("2. Local knowledge")}
                 </small>
                 {mode === "offline"
                   ? t("Connect water, soil & cover")
@@ -1046,7 +1046,7 @@ export default function Studio() {
                 <FileCheck2 size={19} />
               </span>
               <div>
-                <small>{t("3. Keep the brief")}</small>
+                <small>{t("3. Field record")}</small>
                 {t("Record what you find")}
               </div>
             </button>
@@ -1146,10 +1146,10 @@ export default function Studio() {
                 <FileCheck2 size={26} strokeWidth={1.5} />
                 <div>
                   <span className="qs-index">
-                    {t("A choice worth understanding")}
+                    {t("Alternatives in context")}
                   </span>
                   <h2 id="qs-agent-title" tabIndex={-1}>
-                    {t("Less guesswork. A clearer next conversation.")}
+                    {t("A clearer basis for discussion.")}
                   </h2>
                 </div>
               </div>
@@ -1192,7 +1192,7 @@ export default function Studio() {
                     {t("From context to conversation")}
                   </span>
                   <h2 id="qs-agent-title" tabIndex={-1}>
-                    {t("Ask about your next field visit.")}
+                    {t("Questions for your next field visit.")}
                   </h2>
                 </div>
                 <span className="qs-mode-label">
@@ -1510,15 +1510,15 @@ export default function Studio() {
             data-testid="prepared-comparison-examples"
           >
             <summary>
-              {t("Explore the crop example.")}{" "}
+              {t("Illustrative crop comparison.")}{" "}
               <ChevronRight size={16} aria-hidden="true" />
             </summary>
             <div className="qs-example-intro">
               <div>
                 <span className="qs-index">
-                  {t("Understand the trade-offs")}
+                  {t("Differences between alternatives")}
                 </span>
-                <h2>{t("Explore the crop example.")}</h2>
+                <h2>{t("Illustrative crop comparison.")}</h2>
               </div>
               <p>
                 {t(
@@ -1538,7 +1538,7 @@ export default function Studio() {
                     <span className="qs-index">{t("Example inputs")}</span>
                     <span className="qs-example-tag">{t("Sample data")}</span>
                   </div>
-                  <h2 id="qs-scenario-title">{t("Change the assumptions.")}</h2>
+                  <h2 id="qs-scenario-title">{t("Scenario assumptions.")}</h2>
                   <form onSubmit={compare}>
                     <label className="qs-label" htmlFor="qs-profile">
                       {t("Choose an example profile")}
@@ -2153,7 +2153,7 @@ export default function Studio() {
                 <span className="qs-observation-label">
                   {t("Questions for your land")}
                 </span>
-                <h3>{t("You know more than a water balance.")}</h3>
+                <h3>{t("Beyond the water balance.")}</h3>
                 <p>
                   {t(
                     "Bring what you notice about soil, vegetation and water paths into a shared review. Your field record keeps those observations in your own words.",
@@ -2190,7 +2190,7 @@ export default function Studio() {
                 <span className="qs-observation-label">
                   {t("Behind the comparison")}
                 </span>
-                <h3>{t("Know what the answer is built on.")}</h3>
+                <h3>{t("What supports this answer.")}</h3>
                 <div className="qs-source-list">
                   {displayedReport?.evidence.sources.map((source) => (
                     <div key={source.id}>
@@ -2248,7 +2248,7 @@ export default function Studio() {
                 <span className="qs-observation-label">
                   {t("Your next conversation")}
                 </span>
-                <h3>{t("Make the next conversation count.")}</h3>
+                <h3>{t("Questions for the next conversation.")}</h3>
                 <ol className="qs-next-checks">
                   {(
                     displayedReport?.decision.pending ?? [
@@ -2285,9 +2285,9 @@ export default function Studio() {
           <div>
             <span className="qs-index">{t("Why we build Solquira")}</span>
             <h2 id="qs-about-title">
-              {t("Understand the land.")}
+              {t("From desertification")}
               <br />
-              {t("Cultivate the future.")}
+              {t("to seasonal adaptation.")}
             </h2>
             <p>
               {t(
