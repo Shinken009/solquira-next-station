@@ -80,19 +80,22 @@ const PRESETS = [
   },
   {
     id: "chiloe", name: "Chiloé",
-    descriptionEs: "Explorar exceso de humedad", descriptionEn: "Explore excess rainfall",
+    descriptionEs: "Explorar lluvias y drenaje", descriptionEn: "Explore rainfall and drainage",
     lat: -42.4800, lon: -73.7600, concern: "wet", demoSoil: "clayey", demoDrainage: "restricted",
   },
 ] as const;
 
+const PATHWAY_EN: Record<string, string> = {
+  continue: "Illustrative cereal baseline",
+};
 const PATHWAY_ES: Record<string, string> = {
-  continue: "Mantener la secuencia actual",
+  continue: "Secuencia cereal ilustrativa",
   legume: "Diversificar con leguminosas",
   cover: "Priorizar cobertura vegetal",
   forage: "Incorporar forrajeras",
 };
 const CROP_ES: Record<string, string> = {
-  Cereal: "Cereal", Legume: "Leguminosa", Cover: "Cobertura", Forage: "Forrajera",
+  Cereal: "Cereal", Legume: "Leguminosa", Cover: "Cultivo de cobertura", Forage: "Forrajera",
 };
 
 export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShiftJourneyProps) {
@@ -213,7 +216,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
           ? (isEs ? "Límite temporal de consultas alcanzado. Inténtalo más tarde." : "Temporary request limit reached. Try again later.")
           : reason === "session"
             ? (isEs ? "La sesión expiró. Reconecta el Studio para continuar." : "Session expired. Reconnect Studio to continue.")
-            : (isEs ? "No se pudo consultar NASA POWER. No se generan datos sustitutivos." : "NASA POWER could not be queried. No substitute data were generated.")
+            : (isEs ? "No fue posible recuperar los datos de NASA POWER. No se generaron observaciones sustitutivas." : "NASA POWER data could not be retrieved. No substitute observations were generated.")
       );
     } finally {
       if (requestRef.current === controller) {
@@ -224,7 +227,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
   }, [point, season, drainage, soil, priority, concern, csrfToken, isEs, soilOrigin, drainageOrigin, presetConfirmed]);
 
   return (
-    <section id="qs-field-shift" className="field-shift-card" aria-label="Field Shift Decision Support">
+    <section id="qs-field-shift" className="field-shift-card" aria-label={isEs ? "Field Shift: decisiones para la próxima temporada" : "Field Shift: next-season decision support"}>
       <header className="field-shift-header">
         <div>
           <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 700 }}>
@@ -280,10 +283,10 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             onChange={(e) => setSeason(e.target.value as typeof season)}
           >
             <option value="apr_sep">
-              {isEs ? "Abril–Septiembre (Otoño/Invierno)" : "April–September (Austral Fall/Winter)"}
+              {isEs ? "Abril–septiembre (6 meses)" : "April–September (6 months)"}
             </option>
             <option value="oct_mar">
-              {isEs ? "Octubre–Marzo (Primavera/Verano)" : "October–March (Austral Spring/Summer)"}
+              {isEs ? "Octubre–marzo (6 meses)" : "October–March (6 months)"}
             </option>
           </select>
         </div>
@@ -292,7 +295,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
           <label htmlFor="fs-concern">{isEs ? "¿Qué quieres explorar?" : "What would you like to explore?"}</label>
           <select id="fs-concern" value={concern} onChange={(e) => setConcern(e.target.value as typeof concern)}>
             <option value="dry">{isEs ? "Déficit hídrico" : "Water deficit"}</option>
-            <option value="wet">{isEs ? "Exceso de humedad" : "Excess rainfall"}</option>
+            <option value="wet">{isEs ? "Lluvias intensas y drenaje" : "Heavy rainfall and drainage"}</option>
             <option value="balanced">{isEs ? "Ambos contextos" : "Both conditions"}</option>
           </select>
         </div>
@@ -319,7 +322,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             <option value="unknown">{isEs ? "Desconocida" : "Unknown"}</option>
             <option value="clayey">{isEs ? "Arcilloso (retentivo/lento)" : "Clayey (retentive/slow)"}</option>
             <option value="sandy">{isEs ? "Arenoso (drenaje rápido)" : "Sandy (fast drainage)"}</option>
-            <option value="loamy">{isEs ? "Franco (equilibrado)" : "Loamy (balanced)"}</option>
+            <option value="loamy">{isEs ? "Franco" : "Loamy"}</option>
           </select>
         </div>
 
@@ -331,7 +334,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             onChange={(e) => setPriority(e.target.value as typeof priority)}
           >
             <option value="water">{isEs ? "Gestión del agua" : "Water management"}</option>
-            <option value="soil">{isEs ? "Cobertura y salud del suelo" : "Soil cover & conservation"}</option>
+            <option value="soil">{isEs ? "Cobertura vegetal" : "Ground cover"}</option>
             <option value="diversity">{isEs ? "Diversidad de rotación" : "Crop rotation diversity"}</option>
           </select>
         </div>
@@ -400,18 +403,18 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             </div>
             <div className="kpi-item">
               <span className="kpi-val">{(evaluation.historical_context.dry_day_fraction * 100).toFixed(1)}%</span>
-              <span className="kpi-lbl">{isEs ? "Días secos (<1mm/día)" : "Dry days share (<1mm/d)"}</span>
+              <span className="kpi-lbl">{isEs ? "Días con lluvia < 1 mm (%)" : "Days with rainfall < 1 mm (%)"}</span>
             </div>
             <div className="kpi-item">
               <span className="kpi-val">{evaluation.historical_context.mean_heavy_rain_days}</span>
-              <span className="kpi-lbl">{isEs ? "Días con lluvia >=20mm" : "Days with rain >=20mm"}</span>
+              <span className="kpi-lbl">{isEs ? "Días con lluvia ≥ 20 mm" : "Days with rainfall ≥ 20 mm"}</span>
             </div>
             <div className="kpi-item">
               <span className="kpi-val">{evaluation.historical_context.mean_temperature_c} °C</span>
-              <span className="kpi-lbl">{isEs ? "Temperatura media 2m" : "Mean 2m temperature"}</span>
+              <span className="kpi-lbl">{isEs ? "Temperatura media a 2 m" : "Mean temperature at 2 m"}</span>
             </div>
             <div className="kpi-item">
-              <span className="kpi-val">{evaluation.historical_context.count} {isEs ? "años" : "yrs"}</span>
+              <span className="kpi-val">{evaluation.historical_context.count}</span>
               <span className="kpi-lbl">{isEs ? "Temporadas completas" : "Complete seasons"}</span>
             </div>
           </div>
@@ -446,7 +449,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
             {evaluation.pathways.map((plan) => (
               <article key={plan.id} className="pathway-card">
                 <div className="pathway-head">
-                  <span className="pathway-name">{isEs ? PATHWAY_ES[plan.id] ?? plan.name : plan.name}</span>
+                  <span className="pathway-name">{isEs ? PATHWAY_ES[plan.id] ?? plan.name : PATHWAY_EN[plan.id] ?? plan.name}</span>
                   <span style={{ fontSize: "0.72rem", background: "rgba(0,0,0,0.05)", padding: "0.2rem 0.4rem", borderRadius: 4 }}>
                     {isEs ? "Viabilidad agronómica:" : "Agronomic viability:"} <strong>{isEs ? "No evaluada" : "Not assessed"}</strong>
                   </span>
@@ -473,7 +476,7 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
 
                 {plan.wet_exposure_indicator !== null && (
                   <div className="indicator-bar-container">
-                    <span style={{ width: 120 }}>{isEs ? "Índice de exposición a humedad:" : "Wet-exposure index:"}</span>
+                    <span style={{ width: 120 }}>{isEs ? "Índice de lluvia y drenaje:" : "Rain/drainage index:"}</span>
                     <div className="progress-track">
                       <div
                         className="progress-fill fill-wet"
