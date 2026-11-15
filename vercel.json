@@ -12,6 +12,30 @@
       "destination": "/api/field_shift"
     },
     {
+      "source": "/solquira-api/studio/location",
+      "destination": "/api/studio_bridge?route=location"
+    },
+    {
+      "source": "/solquira-api/studio/history",
+      "destination": "/api/studio_bridge?route=history"
+    },
+    {
+      "source": "/solquira-api/studio/power",
+      "destination": "/api/studio_bridge?route=power"
+    },
+    {
+      "source": "/solquira-api/studio/evidence",
+      "destination": "/api/studio_bridge?route=evidence"
+    },
+    {
+      "source": "/solquira-api/studio/evaluate",
+      "destination": "/api/studio_bridge?route=evaluate"
+    },
+    {
+      "source": "/solquira-api/studio/agent",
+      "destination": "/api/studio_bridge?route=agent"
+    },
+    {
       "source": "/solquira-api/:path*",
       "destination": "https://api-solquira.r4logic.lat/solquira-api/:path*"
     },
@@ -72,6 +96,9 @@
   "functions": {
     "api/field_shift.py": {
       "maxDuration": 60
+    },
+    "api/studio_bridge.py": {
+      "maxDuration": 30
     }
   }
 }
