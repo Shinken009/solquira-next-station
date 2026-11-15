@@ -130,7 +130,7 @@ export const GEO_COPY: Record<string, string> = {
   "Start by confirming your place": "Primero confirma tu lugar",
   "Three questions for your next visit": "Tres preguntas para tu próxima visita",
   "Load the forecast to explore rain, temperature and reference water demand for this point.": "Consulta el pronóstico de este punto para revisar lluvia, temperatura y demanda de agua de referencia.",
-  "Follow the water paths. Notice where the soil is exposed. Bring local knowledge into what you check next.": "Sigue los recorridos del agua. Observa dónde queda expuesto el suelo. Usa el conocimiento local para elegir qué revisar después.",
+  "Where does water collect or run off? Where is the soil exposed? These details can help decide what to check next.": "¿Dónde se acumula el agua o por dónde escurre? ¿Dónde queda el suelo descubierto? Esas observaciones ayudan a decidir qué revisar después.",
   "Forecast attached · go to question": "Pronóstico adjunto · ir a la pregunta",
   "Use this forecast in my question": "Usar este pronóstico en mi pregunta",
   "Confirm your chosen place": "Confirmar el lugar elegido",
