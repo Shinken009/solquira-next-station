@@ -559,7 +559,7 @@ export default function FieldContext({
               {data?.weather.note ? t(data.weather.note) :
                 (enabled && !offline
                   ? t("Load the forecast to explore rain, temperature and reference water demand for this point.")
-                  : t("Follow the water paths. Notice where the soil is exposed. Bring local knowledge into what you check next."))}
+                  : t("Where does water collect or run off? Where is the soil exposed? These details can help decide what to check next."))}
             </p>
           )}
           {(!enabled || offline) && (
