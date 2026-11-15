@@ -46,6 +46,19 @@ The isolated function validates session/CSRF before accessing NASA, limits reque
 - **Field provenance:** `soil_origin` and `drainage_origin` distinguish `self_reported` from `illustrative_demo`.
 - The model does not invent NASA observations when the source fails.
 
+## Audited interpretation method
+
+For a transparent, formula-by-formula description of NASA observation windows,
+parameter thresholds, heuristic coefficients, sorting rules, missing data,
+illustrative soil profiles and agronomic limitations, see the
+[Field Shift methodology and science audit](docs/field-shift-methodology.md).
+
+**Important:** Historic temperature is shown as context but does not currently
+change the crop-rotation comparison indices. Soil texture contributes to
+written context, while the illustrative wet-exposure index uses the
+user-reported or demonstrative drainage category. These are scenario
+explorations—not crop suitability predictions.
+
 ## Technology
 
 React, TypeScript, Vite, CesiumJS, OpenStreetMap, Python 3.12, Pydantic, FastAPI (original Studio), Vercel Python Functions, NASA POWER Daily Point API, NASA GIBS, and deterministic rules. Code and design work include assistance from generative AI tools as disclosed below.
