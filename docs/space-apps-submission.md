@@ -54,9 +54,9 @@ https://github.com/Shinken009/solquira-next-station
 
 ## Project demonstration link (Project Demonstration*)
 
-**NOT YET VERIFIED AS PUBLIC:** the Magnific asset is not a substitute for an unrestricted publicly hosted video URL. Upload the reviewed 28.9-second H.264/AAC MP4 and paste its exact public YouTube or other permitted hosting URL here only after opening it in an unauthenticated/private browser window.
+**FINAL EDITED MASTER (not yet publicly hosted):** https://www.magnific.com/app/creation/3zb1xJaREY . This 28.9-second H.264/AAC MP4 replaces the earlier master. The 0–5.0 s introduction uses authentic screen capture from the running application, not AI-generated environmental footage. The large 'AI-GENERATED FOOTAGE' label is therefore no longer present. The original AI-generated narration and music remain, and are credited on the end card. The Magnific editor link is not an unrestricted public demo URL; upload this edited master to YouTube or another approved host and verify the anonymous URL.
 
-**TO COMPLETE:** paste the final published YouTube video link after checking (a) duration <=30.0 s in the exported master, (b) visibility unrestricted in a private browsing window, (c) on-screen watermark of AI-generated footage, (d) audio and code AI disclosures in description/metadata, (e) legitimate real-product captures. Do not paste a protected Magnific editor or Vercel preview link as the required public demonstration.
+**TO COMPLETE:** paste the final published YouTube video link after checking (a) duration <=30.0 s in the exported master, (b) visibility unrestricted in a private browsing window, (c) all visual material is authentic UI capture or non-generative graphics (the synthetic environmental opening was replaced), (d) AI narration/music and AI-assisted code/text are disclosed in description/metadata, (e) the source product captures remain authentic. Do not paste a protected Magnific editor or Vercel preview link as the required public demonstration.
 
 ## NASA Data (*)
 
@@ -99,7 +99,7 @@ Check any additional assets, fonts, third-party music, datasets or libraries act
 
 Generated code and text: Generative AI assistants (OpenAI ChatGPT/Codex, and Google Antigravity if applicable during development) assisted with code drafting, localization, testing and review; the human creator remained responsible for engineering choices, data interpretation and final validation. Source code and this README describe these contributions. NASA POWER readings themselves were queried from NASA and were never artificially generated.
 
-Generated video: Magnific (including AI-generated environmental footage and AI-assisted editing/motion) was used only where identified. Every frame of generated footage must include a clear visible watermark reading **AI-GENERATED FOOTAGE**. Authentic screen captures represent the working application and are not reconstructed with generative AI.
+Video production: Magnific was used for audiovisual creation and editing, but **the final submitted demo does not contain the previously generated environmental footage**. That clip was replaced by a genuine screenshot of the deployed Solquira interface, composed with non-generative editing. The rest of the demo uses genuine application captures and simple graphic overlays. There is therefore no AI-generated visual footage in the final MP4 requiring a visual watermark. If any generated visual footage is reintroduced, NASA's visible-watermark requirement must be satisfied.
 
 Generated audio: Any AI-synthesized narration or soundtrack should be declared in the YouTube description, production metadata and/or source credits. Generated soundtrack and voice are not NASA recordings.
 
@@ -117,13 +117,13 @@ Public source: https://github.com/Shinken009/solquira-next-station
 
 Challenge: NASA Space Apps Challenge 2026 — Field Shift: Adapting Farms with NASA Data.
 
-This short demonstration includes **AI-GENERATED FOOTAGE**, clearly watermarked on screen. Generated narration and music, along with selected environmental scenes, were produced/edited using Magnific. Product-screen captures show the actual application. OpenAI ChatGPT/Codex assisted with code review, testing and writing; the project author checked the final work.
+This demonstration opens with an authentic screenshot of the working Solquira application and contains real product-screen captures, not AI-generated environmental footage. The original soundtrack and narration were AI-generated with assistance from Magnific and are credited on screen at the end. Magnific supported audiovisual production and editing. OpenAI ChatGPT/Codex assisted with code review, testing and writing; the project author checked the final work.
 
 NASA POWER supplies historical gridded precipitation and temperature (2021–2025); NASA GIBS imagery is available in the wider Studio. Historical data do not forecast the next season. Crop-rotation comparisons are illustrative, not validated planting guidance. Solquira predates the hackathon; Next Station is the adapted Field Shift experience. NASA does not endorse this project.
 
 Project data, sources, and methods: https://github.com/Shinken009/solquira-next-station/blob/main/docs/field-shift-methodology.md
 
-**Metadata checklist:** Ensure the video platform's title/description identifies AI-generated narration and soundtrack and the visible AI-footage watermark remains intact. Verify you have rights to use all footage/audio.
+**Metadata checklist:** Ensure the video platform's title/description identifies AI-generated narration and soundtrack; no synthetic environmental footage is present in this final version. Verify you have rights to use all footage/audio.
 
 ## Registration / eligibility check
 
@@ -138,7 +138,7 @@ Project data, sources, and methods: https://github.com/Shinken009/solquira-next-
 - [ ] Project summary, details and name checked in English.
 - [ ] Independent anonymous browser can access the web app without a password, approval or registration.
 - [ ] Main product demo runs with real NASA POWER historical evidence.
-- [ ] Demo video duration **strictly <= 30 seconds**; all AI-generated footage visibly watermarked.
+- [ ] Final revised demo duration **strictly <= 30 seconds**; the synthetic introductory footage has been replaced with a genuine app screenshot. AI audio acknowledged in the video and public description.
 - [ ] Video audio/description explicitly identifies AI usage.
 - [ ] Final YouTube link works in incognito without password, request for permission, or account sign-in.
 - [ ] All NASA source and third-party tool links listed and verified, including Open-Meteo/ERA5, Natural Earth, Lucide, OpenStreetMap, original Solquira, and actual audiovisual resources.
