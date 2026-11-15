@@ -381,8 +381,8 @@ export function FieldShiftJourney({ point, csrfToken, onSelectPreset }: FieldShi
 
       {evaluation && evaluation.status !== "historical_evidence_available" && (
         <div className="field-shift-status" role="status">
-          <strong>{isEs ? "Evidencia histórica no disponible" : "Historical evidence unavailable"}</strong>
-          <p>{isEs ? "NASA POWER no entregó una serie suficiente y validada. No se muestran índices ni comparaciones sin evidencia." : "NASA POWER did not provide a sufficient validated series. No indices or comparisons are displayed without evidence."}</p>
+          <strong>{isEs ? "No hay datos históricos suficientes" : "Not enough historical data"}</strong>
+          <p>{isEs ? "NASA POWER no entregó suficientes datos históricos para calcular esta comparación. No se muestran resultados cuando falta información." : "NASA POWER did not return enough historical data for this comparison. Results are not shown when information is missing."}</p>
         </div>
       )}
 
