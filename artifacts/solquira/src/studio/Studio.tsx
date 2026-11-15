@@ -134,7 +134,7 @@ const areas: {
   },
   {
     id: "evidence",
-    label: "Evidence",
+    label: "Sources",
     target: "qs-evidence-area",
     detail: "Review sources and limits",
   },
@@ -941,7 +941,7 @@ export default function Studio() {
           data-testid="journey-next-step"
         >
           <div>
-            <strong>{t("Place → evidence → next check")}</strong>
+            <strong>{t("Place → weather → next step")}</strong>
             <p>
               {briefPoint
                 ? t("Your place stays selected across all four areas.")
@@ -966,12 +966,12 @@ export default function Studio() {
             <div className="qs-intro-copy">
               <div className="qs-kicker">
                 <span className="qs-dot" />{" "}
-                {t("Climate evidence. Local knowledge. Better-informed choices.")}
+                {t("From drought to heavy rain, every place is different.")}
               </div>
               <h1 id="qs-title">
-                {t("Every landscape is different.")}
+                {t("Water shapes every landscape.")}
                 <br />
-                {t("The next season starts with evidence.")}
+                {t("Every season brings new choices.")}
               </h1>
               <p>
                 {mode === "offline"
@@ -979,7 +979,7 @@ export default function Studio() {
                       "Explore the landscape and preparation questions. Historical NASA comparisons require an available data service.",
                     )
                   : t(
-                      "From drylands to rainy regions, explore historical NASA data, add your field knowledge, and compare illustrative management choices—not agronomic prescriptions.",
+                      "From drylands to rainy regions, Solquira shows how rainfall and temperature have changed in NASA's historical records. Add what you know about your land and explore ways to prepare for the next season. The alternatives are examples, not planting recommendations.",
                     )}
               </p>
               <div className="qs-hero-actions">
@@ -987,7 +987,7 @@ export default function Studio() {
                   {t("Start with a place")} <MapPin size={18} />
                 </a>
                 <button className="qs-hero-secondary" type="button" onClick={() => navigateArea("anticipation", "qs-field-shift")}>
-                  {t("Explore NASA seasonal evidence")}
+                  {t("See NASA's historical data")}
                 </button>
               </div>
             </div>
@@ -1002,7 +1002,7 @@ export default function Studio() {
               <strong>{t("Healthy land. Resilient communities.")}</strong>
               <p>
                 {t(
-                  "Water, soil and livelihoods are connected. Local field observations add context to environmental data, with sources and limitations kept visible.",
+                  "Water and soil shape the daily work of people who care for the land. What they notice in the field helps make sense of the numbers and shows what still needs checking.",
                 )}
               </p>
             </div>
@@ -1380,7 +1380,7 @@ export default function Studio() {
               {agentBusy && (
                 <p className="qs-agent-progress" role="status">
                   <LoaderCircle size={14} className="qs-spin" />
-                  {t("Checking the scenario, comparison and evidence…")}
+                  {t("Checking the scenario, options, and sources…")}
                 </p>
               )}
               {agentResult && (
@@ -1838,9 +1838,9 @@ export default function Studio() {
           >
             <div className="qs-connections-heading">
               <h2 id="qs-connections-title">
-                {t("Your evidence, working together")}
+                {t("Water, soil, and next steps")}
               </h2>
-              <span>{t("Sources, checks and reasoning")}</span>
+              <span>{t("What we know and what to check")}</span>
             </div>
 
             <div className="qs-connection-line">
@@ -2087,21 +2087,21 @@ export default function Studio() {
             aria-labelledby="qs-review-title"
           >
             <div className="qs-section-heading">
-              <span className="qs-index">{t("Local knowledge matters")}</span>
+              <span className="qs-index">{t("What people see in the field matters")}</span>
               <span className="qs-example-tag">{t("Better together")}</span>
             </div>
             <h2 id="qs-review-title">
-              {t("Bring local knowledge into the picture.")}
+              {t("A map is only part of the story.")}
             </h2>
             <div
               className="qs-review-tabs"
               role="tablist"
-              aria-label={t("Evidence and decision review")}
+              aria-label={t("Sources and next steps")}
             >
               {(
                 [
                   { id: "soil", label: t("Soil & cover"), icon: Leaf },
-                  { id: "evidence", label: t("Evidence"), icon: Layers3 },
+                  { id: "evidence", label: t("Sources"), icon: Layers3 },
                   { id: "decision", label: t("Next checks"), icon: FileCheck2 },
                 ] as const
               ).map(({ id, label, icon: Icon }) => (
@@ -2285,13 +2285,13 @@ export default function Studio() {
           <div>
             <span className="qs-index">{t("Why we build Solquira")}</span>
             <h2 id="qs-about-title">
-              {t("From desertification")}
+              {t("From drought and desertification")}
               <br />
-              {t("to seasonal adaptation.")}
+              {t("to the challenges of heavy rain.")}
             </h2>
             <p>
               {t(
-                "Solquira began in Latin America with the challenge of drought, desertification and land degradation. Next Station extends this mission to seasonal water variability and humid landscapes. It combines historical environmental evidence with local knowledge so growers, advisers and communities can compare possibilities and decide what to check next.",
+                "Solquira began in Latin America by looking at drought, desertification, and land degradation. Next Station also looks at places where heavy rain brings different challenges. We bring NASA's weather records together with what people know about their fields, helping farmers, advisers, and communities explore options and decide what to check before the next season.",
               )}
             </p>
           </div>
@@ -2315,7 +2315,7 @@ export default function Studio() {
           <nav className="qs-footer-nav" aria-label={t("Product and methods")}>
             <a href="#qs-about">{t("Our purpose")}</a>
             <button type="button" onClick={() => openReview("evidence")}>
-              {t("Explore evidence")}
+              {t("See the sources")}
             </button>
             <details
               className="qs-footer-methods"
